@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creador de Laberintos DHS</title>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/gruvbox-dark.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header>
+        <h1>Creador de Laberintos DHS</h1>
+    </header>
+    <main>
+        <section>
+            <h2>¡Crea un diseño único!</h2>
+            <p>Configura el diseño de tu laberinto eligiendo una de las opciones para cada casillero. Hay <i>realmente
+                    miles de billones</i> de combinaciones posibles.</p>
+            <h3>Opciones Posibles</h3>
+            <ul>
+                <li>P: Pared</li>
+                <li>C: Camino</li>
+                <li>E: Entrada</li>
+                <li>S: Salida</li>
+            </ul>
+
+            <div id="opcionesLaberinto"></div>
+
+            <p id="notaDeGuardado">¡Cuidado! Hay cambios sin guardar.</p>
+
+            <h3>Requisitos</h3>
+            <ul>
+                <li>La entrada está <i>fija</i> en el segundo casillero.</li>
+                <li>Solo puede haber una única salida.</li>
+                <li>Los otros bordes del laberinto deben ser Paredes.</li>
+                <li>Tiene que haber al menos un camino contínuo desde la Entrada a la salida.</li>
+                <li>No se puede mover en diagonal.</li>
+            </ul>
+        </section>
+        <section>
+            <h2>Resultado en Código</h2>
+            <p>Puedes copiar el código generado automáticamente con los datos validados para diseñar tu propio laberinto
+                en Playground.</p>
+            <h3>Recuento Cantidad de Casilleros</h3>
+            <ul>
+                <li>P: Paredes: <span class="recuento" id="rp"></span></li>
+                <li>C: Caminos: <span class="recuento" id="rc"></span></li>
+                <li>E: Entradas: <span class="recuento" id="re"></span></li>
+                <li>S: Salidas: <span class="recuento" id="rs"></span></li>
+            </ul>
+            <div id="resultadoCodigo">
+                <pre><code class="html" id="codigoGenerado"></code></pre>
+            </div>
+            <button id="copiarCodigoBTN">Copiar Código</button>
+            <button id="guardarCodigoBTN">Guardar y comprobar</button>
+        </section>
+    </main>
+    <footer>
+        <p>Desarrollado por Equipo Mentores Digital House Schools</p>
+    </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
+    <script src="script.js" type="module"></script>
+</body>
+
+</html>

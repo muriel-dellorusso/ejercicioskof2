@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>kof1_v01_es_02_02</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-height: fit-content;
+        }
+
+
+        .container {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            column-gap: 30px;
+            text-align: center;
+        }
+
+        .container img {
+            display: none;
+        }
+
+        .text-box {
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 2em;
+            /* width: 100%; */
+            /* margin:100px; */
+        }
+
+        .text-box.pink {
+            background-color: #d147a3;
+            color: white;
+        }
+
+        .text-box.yellow {
+            background-color: #f5e041;
+        }
+
+        .text-box.green {
+            background-color: #47d16b;
+            color: white;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .item {
+            background-color: #ccc;
+            padding: 10px;
+            border-radius: 10px;
+            margin: 10px auto;
+            width: 250px;
+            height: 50px;
+            text-align: center;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .drop-box {
+            border: 2px dashed black;
+            border-radius: 10px;
+            margin: 10px;
+            min-height: 100px;
+            display: grid;
+            grid-template-rows: auto auto;
+            justify-content: center;
+        }
+
+        .buttons{
+            display: grid;
+            grid-template-columns: auto auto;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+
+        .validate-button, .reset-button {
+            display: block;
+            width: fit-content;
+            background-color: #9850c0;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            line-height: 60px;
+            padding: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container div {
+                flex: 1 1 100%;
+            }
+
+            .text-box {
+                width: 60%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="text-box pink">Explicit rules </div>
+        <div class="text-box yellow">Artifical Intelligence</div>
+        <div class="drop-zone">
+            
+            <div class="drop-box" id="drop-box-1">
+                <!-- <img src="images/pc.png" alt="PC Image 1" id="c1"> -->
+            </div>
+        </div>
+        <div class="drop-zone">
+            <div class="drop-box" id="drop-box-2">
+                <!-- <img src="images/pc.png" alt="PC Image 2" id="c2"> -->
+            </div>
+        </div>
+    </div>
+
+    <div class="options">
+        <div class="item" id="item-1">Traffic Light 🚦</div>
+        <div class="item" id="item-2">YouTube recomendations 📺</div>
+        <div class="item" id="item-3">Calculate the average grade 📝</div>
+        <div class="item" id="item-4">Face recognition 😊</div>
+        <div class="item" id="item-5">Turn on a light with a switch 💡</div>
+        <div class="item" id="item-6">Control the temperature of an automatic oven 🍳</div>
+        <div class="item" id="item-7">Detect fraud in banking transactions 💳</div>
+        <div class="item" id="item-8">Select songs based on your mood 🎵</div>
+        <div class="item" id="item-9">Set a timer to water the garden 🌱</div>
+        <div class="item" id="item-10">Diagnose diseases based on X-rays 🩻</div>
+        <!-- <div class="item" id="item-11">Activar la alarma a una hora específica ⏰</div>
+        <div class="item" id="item-12">Identificar objetos en una fotografía 📸</div>
+        <div class="item" id="item-13">Calcular el área de un triángulo 🟦</div>
+        <div class="item" id="item-14">Sugerir películas basadas en tus preferencias 🍿</div>
+        <div class="item" id="item-15">Ordenar correos electrónicos como spam o no-spam 📬</div> -->
+    </div>
+
+    <div class="buttons">
+        <button class="validate-button" id="executeButton">Save and check</button>
+        <button class="reset-button">Reset</button>
+    </div>
+</body>
+
+<script src="../shared/drag.js" type="module"></script>
+<script type="module">
+    import { DragDivider } from "../shared/drag.js"
+    import { PGEvent } from "../shared/pg-event.js"
+    
+    const pgEvent = new PGEvent();
+    window.onload = () => {
+        pgEvent.getValues();
+
+        const dragDivider = new DragDivider({
+            base: {
+                element: document.querySelector(".options"),
+                items: [
+                    {
+                        element: document.getElementById("item-1"),
+                        expectedCategory: "regla",
+                    },
+                    {
+                        element: document.getElementById("item-2"),
+                        expectedCategory: "ia",
+                    },
+                    {
+                        element: document.getElementById("item-3"),
+                        expectedCategory: "regla",
+                    },
+                    {
+                        element: document.getElementById("item-4"),
+                        expectedCategory: "ia",
+                    },
+                    {
+                        element: document.getElementById("item-5"),
+                        expectedCategory: "regla",
+                    },
+                    {
+                        element: document.getElementById("item-6"),
+                        expectedCategory: "regla",
+                    },
+                    {
+                        element: document.getElementById("item-7"),
+                        expectedCategory: "ia",
+                    },
+                    {
+                        element: document.getElementById("item-8"),
+                        expectedCategory: "ia",
+                    },
+                    {
+                        element: document.getElementById("item-9"),
+                        expectedCategory: "regla",
+                    },
+                    {
+                        element: document.getElementById("item-10"),
+                        expectedCategory: "ia",
+                    },
+                    // {
+                    //     element: document.getElementById("item-11"),
+                    //     expectedCategory: "regla",
+                    // },
+                    // {
+                    //     element: document.getElementById("item-12"),
+                    //     expectedCategory: "ia",
+                    // },
+                    // {
+                    //     element: document.getElementById("item-13"),
+                    //     expectedCategory: "regla",
+                    // },
+                    // {
+                    //     element: document.getElementById("item-14"),
+                    //     expectedCategory: "ia",
+                    // },
+                    // {
+                    //     element: document.getElementById("item-15"),
+                    //     expectedCategory: "ia",
+                    // }
+                ],
+            },
+            categories: [
+                {
+                    name: "regla",
+                    element: document.getElementById("drop-box-1"),
+                },
+                {
+                    name: "ia",
+                    element: document.getElementById("drop-box-2"),
+                },
+            ],
+            verifyButton: document.getElementById("executeButton"),
+            messages: {
+            onFail: "Some objects are placed in the wrong category.",
+            onSuccess: "All objects are placed correctly.",
+            onReset: "Activity reset successfully."
+        }
+        });
+
+        // Listener para el mensaje del estado guardado
+        window.addEventListener('message', function (event) {
+            const savedState = JSON.parse(event.data?.data);   
+            
+            if (savedState?.base) {
+                dragDivider.loadState(savedState);
+            } else {
+                console.log("No saved state found. Starting with default configuration.");
+            }
+        });
+    };
+    
+</script>
+
+</html>

@@ -1,0 +1,184 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: sans-serif;
+}
+
+header {
+    position: sticky;
+    top: 0;
+    background-color: rgba(27, 3, 3, 0.85);
+    width: 100%;
+    padding: 2vmin;
+    color: ivory;
+}
+
+main {
+    padding: 2vmin;
+}
+
+@media only screen and (min-width: 992px) {
+    main {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-gap: 2vmin;
+    }
+}
+
+section {
+    padding: 1.5vmin;
+    background: rgb(245, 203, 203);
+}
+
+section h2 {
+    margin: 1vmin;
+    color: rgba(3, 29, 3, 0.938)
+}
+
+section h3 {
+    margin: 1vmin;
+    color: rgba(3, 29, 3, 0.938);
+    font-size: 15px;
+}
+
+section p {
+    margin: 1.5vmin;
+}
+
+section ul {
+    padding-left: 4vmin;
+}
+
+aside {
+    display: none;
+}
+
+footer {
+    color: ivory;
+    background-color: black;
+    position: sticky;
+    bottom: 0;
+    width: 100%;
+    padding: 2vmin;
+}
+
+#opcionesLaberinto {
+    margin: 2vmin auto;
+    border: 3px solid rgb(90, 43, 43);
+    display: grid;
+    width: 75vmin;
+    height: 75vmin;
+    grid-template-rows: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+}
+
+#opcionesLaberinto .fila-opciones {
+    width: 100%;
+    height: 100%;
+    /* border: 1px solid green; */
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+}
+
+#opcionesLaberinto .celda-opciones {
+    width: 100%;
+    height: 100%;
+}
+
+#opcionesLaberinto select {
+    width: 100%;
+    height: 100%;
+    font-size: 3vmin;
+}
+
+#opcionesLaberinto option {
+    font-weight: bold;
+    background-color: white;
+    color: black;
+    font-size: 3vmin;
+}
+
+#opcionesLaberinto option[disabled="true"] {
+    font-style: italic;
+    font-weight: normal;
+}
+
+#opcionesLaberinto select.P {
+    background-color: rgb(51, 49, 49);
+    color: white;
+}
+
+#opcionesLaberinto select.C {
+    background-color: rgb(255, 255, 166);
+}
+
+#opcionesLaberinto select.E {
+    background-color: rgb(133, 14, 14);
+}
+
+#opcionesLaberinto select.S {
+    background-color: rgb(20, 92, 20);
+    color: white;
+}
+
+#resultadoCodigo {
+    margin: 2vmin;
+    padding: 2vmin;
+    font-family: monospace;
+    color: white;
+    background: black;
+}
+
+#codigoGenerado {
+    max-height: 71vh;
+    overflow-y: scroll;
+}
+
+section button {
+    outline: none;
+    border: none;
+    padding: 15px;
+    display: block;
+    margin: 2vmin auto;
+    background: black;
+    color: ivory;
+    font-size: 20px;
+    font-weight: bold;
+    border-radius: 7px;
+    transition: all .1s;
+}
+
+section button:hover {
+    background: rgb(41, 38, 38);
+    cursor: pointer;
+}
+
+section button:active {
+    background: black;
+}
+
+#mensajeCopia {
+    background: black;
+    color: ivory;
+    width: 60%;
+    padding: 10px;
+    margin: 1vmin auto;
+    transition: all 1.6s;
+    opacity: 0;
+    border-radius: 5px;
+    text-align: center;
+}
+
+#mensajeCopia.oculto {
+    opacity: 1;
+}
+
+#notaDeGuardado {
+    color: red;
+    text-align: center;
+    font-weight: bold;
+    display: none;
+}

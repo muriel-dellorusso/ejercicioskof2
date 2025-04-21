@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dispositivos input/output</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #eaf4ff;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .main-container {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 30px;
+        }
+
+        h1 {
+            width: 60%;
+            text-align: left;
+            margin: 0 0 20px 0;
+            color: rgb(88, 83, 83);
+        }
+
+        .content {
+            width: 100%;
+        }
+
+        .base {
+            background-color: #fff8e1;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px dashed #000;
+        }
+
+        .base-options,
+        .objects {
+            display: flex;
+            justify-content: space-evenly;
+            padding: 20px;
+        }
+
+        .categories {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .category {
+            height: 200px;
+            padding: 20px;
+            background-color: #fff8e1;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 15px;
+            margin-right: 20px;
+            background-size: cover;
+            background-position: center;
+            border: 2px dashed #000;
+        }
+
+        .category:last-child {
+            margin-right: 0;
+        }
+
+        .image-container {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .image-container img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            border-radius: 10%;
+        }
+
+        .category .header {
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+            background-color: #ffcc00;
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: 2px dashed #000;
+        }
+
+        .category .header span {
+            display: inline-block;
+            background-color: #ffcc00;
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        .object {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 40px;
+            height: 40px;
+        }
+
+        .buttons{
+            display: grid;
+            grid-template-columns: auto auto;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .validate-button, .reset-button {
+            display: block;
+            width: fit-content;
+            background-color: #FFA500;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            line-height: 60px;
+            padding: 10px;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="main-container">
+        <!-- <h1>
+            ¿Cuáles de los siguientes objetos son de entrada de información y cuáles de salida de información?
+        </h1> -->
+        <div class="content">
+            <div class="base">
+                <!-- <h4>Arrastra los objetos hacia el lugar correspondiente</h4> -->
+
+                <div class="base-options">
+                    <div class="image-container" id="microfono">
+                        <img src="images/microfono.png" alt="microfono" title="Micrófono">
+                    </div>
+                    <div class="image-container" id="camara">
+                        <img src="images/camara.png" alt="camara" title="Cámara">
+                    </div>
+                    <div class="image-container" id="monitor">
+                        <img src="images/monitor.png" alt="monitor" title="Pantalla">
+                    </div>
+                    <div class="image-container" id="parlante">
+                        <img src="images/parlante.png" alt="parlante" title="Parlante">
+                    </div>
+                    <div class="image-container" id="teclado">
+                        <img src="images/teclado.png" alt="teclado" title="Teclado">
+                    </div>
+                    <div class="image-container" id="mouse">
+                        <img src="images/mouse.png" alt="mouse" title="Mouse">
+                    </div>
+                </div>
+            </div>
+
+            <div class="categories">
+                <div class="category" id="entrada-informacion">
+                    <div class="header">Entradas de información</div>
+                    <div class="objects" id="entrada-informacion"></div>
+                </div>
+
+                <div class="category" id="salida-informacion">
+                    <div class="header">Salidas de información</div>
+                    <div class="objects" id="salida-informacion"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button class="button validate-button">Guardar y comprobar</button>
+            <button class="reset-button">Resetear</button>
+        </div>
+    </div>
+</body>
+
+<!-- <script src="../shared/drag.js" type="module"></script> -->
+<script type="module">
+    import {DragDivider} from "../shared/drag.js"
+    import { PGEvent } from "../shared/pg-event.js"
+    const pgEvent = new PGEvent();
+
+    window.onload = () => {
+        pgEvent.getValues();
+
+        const dragDivider = new DragDivider({
+        base: {
+            element: document.querySelector(".base-options"),
+            items: [
+                {
+                    element: document.getElementById("microfono"),
+                    expectedCategory: "entrada-informacion",
+                },
+                {
+                    element: document.getElementById("camara"),
+                    expectedCategory: "entrada-informacion",
+                },
+                {
+                    element: document.getElementById("monitor"),
+                    expectedCategory: "salida-informacion",
+                },
+                {
+                    element: document.getElementById("parlante"),
+                    expectedCategory: "salida-informacion",
+                },
+                {
+                    element: document.getElementById("teclado"),
+                    expectedCategory: "entrada-informacion",
+                },
+                {
+                    element: document.getElementById("mouse"),
+                    expectedCategory: "entrada-informacion",
+                },
+            ],
+        },
+        categories: [
+            {
+                name: "entrada-informacion",
+                element: document.getElementById("entrada-informacion"),
+            },
+            {
+                name: "salida-informacion",
+                element: document.getElementById("salida-informacion"),
+            }
+        ],
+        verifyButton: document.querySelector(".button"),
+        messages: {
+            onFail: "Algunos objetos no están en la categoría que corresponde.",
+            onSuccess: "Todos los objetos están en la categoría que corresponde.",
+            onReset: "La actividad fue reiniciada correctamente."
+        }
+    });
+
+        // Listener para el mensaje del estado guardado
+        window.addEventListener('message', function (event) {
+            const savedState = JSON.parse(event.data?.data);    
+            
+            if (savedState?.base) {
+                dragDivider.loadState(savedState);
+            } else {
+                console.log("No saved state found. Starting with default configuration.");
+            }
+        });
+    };
+    
+</script>
+
+</html>

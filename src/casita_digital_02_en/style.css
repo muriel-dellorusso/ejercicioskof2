@@ -1,0 +1,148 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,100..900;1,100..900&display=swap');
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  transition: all 0.3s;
+  /* font-family: ; */
+}
+
+body {
+  background-image: url("https://assets.digitalhouse.com/content/ar/sch/fondo-casitadigitalcompleja.jpeg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  font-family: "Archivo", sans-serif;
+}
+
+.preview-caja {
+  width: 100%;
+  margin: 30px 0;
+}
+#preview {
+  width: 500px;
+  margin: 0 auto;
+  background-color: #4B4B4B;
+  font-size: xx-large;
+  padding: 25px;
+  border-radius: 10px;
+  color: white;
+  display: flex;
+  justify-content: space-around;
+}
+.char-preview__char{
+  background-color: #ffffff;
+  color: #000000;
+  padding: 5px;
+  order: 2;
+  font-size: .8em;
+  width: 30.19px;
+}
+.char-preview{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.char-preview b{
+  background-color: #1919bf;
+  border: 1px solid #000000;
+  border-radius: 50%;
+  padding: 5px;
+  font-size: .8em;
+  color: #ffffff;
+  font-weight: bolder;
+  width: 27.3px;
+}
+
+#casita {
+  margin: 0 auto;
+  height: 100vh;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-evenly;
+  text-align: center;
+  gap: 20px;
+}
+.binary-select__char {
+  position: relative;
+  width: 190px;
+  height: 130px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-evenly;
+  background-image: url("https://assets.digitalhouse.com/content/ar/sch/imagen-ladrillo-cdigital.jpeg");
+  background-size: cover;
+  border-right: 3px solid   #4B4B4B;
+  border-left: 3px solid  #4B4B4B;
+  border-top: 10px solid  #4B4B4B;
+  border-bottom: 10px solid green;
+  border-radius: 20px 20px 0 0;
+  margin: 5px 0;
+}
+.binary-select__char div{
+  order: -1;
+}
+.binary-select__char div b{
+  background-color: #1919bf;
+  border: 1px solid #000000;
+  border-radius: 50%;
+  padding: 5px;
+  font-size: .8em;
+  color: #ffffff;
+  font-weight: normal;
+}
+.binary-select__char div{
+  width: 100%;
+}
+.binary-select__char::before {
+  content: "";
+  position: absolute;
+  top: -66px;
+  left: 22px;
+  height: 130px;
+  width: 130px;
+  background-image: url("https://assets.digitalhouse.com/content/ar/sch/techo-degradado-cdigital.jpeg");
+  background-size: cover;
+  transform: rotate(45deg);
+  border-top: 10px solid  #4B4B4B;
+  border-left: 10px solid   #4B4B4B;
+  z-index: -1;
+}
+.binary-select__char::after {
+  content: "";
+  position: absolute;
+  top: -70px;
+  left: 15px;
+  height: 70px;
+  width: 30px;
+  background: #4B4B4B;
+  z-index: -2;
+  border-top: 7px solid rgba(0, 0, 0, 0.3);
+}
+.binary-select__select {
+  border-radius: 3px;
+  width: 19%;
+  height: 35%;
+  background-color: #000000;
+  color: white;
+  border: 2px solid   #4B4B4B;
+  text-align: center;
+  font-size: larger;
+}
+
+footer {
+  background-color: #000000;
+  color: #ffffff;
+  font-size: x-large;
+  padding: 10px;
+}
+
+.binary-select__select--selected{
+  background-color: yellow;
+  color: #000000;
+}

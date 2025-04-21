@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow Diagram</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: white;
+            flex-direction: column;
+            gap: 15px;
+            font-family: Arial, sans-serif;
+        }
+
+        .flow {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+            padding: 10px;
+        }
+
+        .element {
+            width: 300px;
+            /* Aumentar el tamaño del rectángulo */
+            height: 100px;
+            /* Aumentar el tamaño del rectángulo */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .red {
+            background-color: #00cc7eff;
+        }
+
+        .blue {
+            background-color: #8383fdff;
+        }
+
+        .yellow {
+            background-color: #ffdc76ff;
+        }
+
+        .green {
+            background-color: #ff8d7aff;
+        }
+
+
+        .arrow-right,
+        .arrow-up-down {
+            font-size: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .vertical-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .options {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            border: 2px dashed #000;
+            padding: 10px;
+            width: 80%;
+        }
+
+        .option {
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 20px;
+            font-weight: bold;
+            width: 140px;
+            text-align: center;
+            user-select: none;
+            cursor: pointer;
+
+        }
+
+        .option img {
+            width: 80%;
+            /* Reducir el tamaño de la imagen */
+            height: auto;
+            background: none;
+            /* Asegurar que las imágenes no tengan fondo */
+        }
+
+        .buttons{
+            display: grid;
+            grid-template-columns: auto auto;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .validate-button, .reset-button {
+            display: block;
+            width: fit-content;
+            background-color: #FFA500;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            line-height: 60px;
+            padding: 10px;
+        }
+
+        .title {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 14px;
+            gap: 20px;
+        }
+
+        .highlighted {
+            background-color: #66b2ff;
+            width: 60%;
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- <div class="title">
+        <h1>El cuadro representa el camino que realizan los datos en una computadora</h1>
+        <h1 class="highlighted">Ordena las palabras donde corresponden</h1>
+    </div> -->
+
+    <div class="flow">
+        <div class="element red"></div>
+        <div class="arrow-right">→</div>
+        <div class="vertical-container">
+            <div class="element blue"></div>
+            <div class="arrow-up-down">↕</div>
+            <div class="element yellow"></div>
+        </div>
+        <div class="arrow-right">→</div>
+        <div class="element green"></div>
+    </div>
+
+    <div class="options">
+        <div class="option" id="option-processing">
+            <img src="images/cpu.png" alt="Procesamiento" title="CPU">
+        </div>
+        <div class="option" id="option-output">
+            <img src="images/monitor.png" alt="Output" title="Screen">
+        </div>
+        <div class="option" id="option-input">
+            <img src="images/mando.png" alt="Input" title="Joystick">
+        </div>
+        <div class="option" id="option-storage">
+            <img src="images/memoria.png" alt="Almacenamiento" title="Memory">
+        </div>
+    </div>
+
+    <div class="buttons">
+        <button id="executeButton" class="validate-button">Save and check</button>
+        <button class="reset-button">Reset</button>
+    </div>
+</body>
+
+<!-- <script src="../shared/drag.js" type="module"></script> -->
+<script type="module">
+    import {DragDivider} from "../shared/drag.js"
+    import { PGEvent } from "../shared/pg-event.js"
+    const pgEvent = new PGEvent();
+
+    window.onload = () => {
+        pgEvent.getValues();
+
+        const dragDivider = new DragDivider({
+            base: {
+                element: document.querySelector(".options"),
+                items: [
+                    {
+                        element: document.getElementById("option-input"),
+                        expectedCategory: "Input",
+                    },
+                    {
+                        element: document.getElementById("option-storage"),
+                        expectedCategory: "Almacenamiento",
+                    },
+                    {
+                        element: document.getElementById("option-output"),
+                        expectedCategory: "Output",
+                    },
+                    {
+                        element: document.getElementById("option-processing"),
+                        expectedCategory: "Procesamiento",
+                    }
+                ],
+            },
+            categories: [
+                {
+                    name: "Input",
+                    element: document.querySelector(".red"),
+                },
+                {
+                    name: "Almacenamiento",
+                    element: document.querySelector(".yellow"),
+                },
+                {
+                    name: "Output",
+                    element: document.querySelector(".green"),
+                },
+                {
+                    name: "Procesamiento",
+                    element: document.querySelector(".blue"),
+                }
+            ],
+            verifyButton: document.getElementById("executeButton"),
+            messages: {
+                onFail: "Some parts of the IPO model are not in the correct place.",
+                onSuccess: "Great job! The IPO model is correct.",
+                onReset: "Activity reset successfully."
+            }
+        });
+
+        // Listener para el mensaje del estado guardado
+        window.addEventListener('message', function (event) {
+            const savedState = JSON.parse(event.data?.data);    
+            
+            if (savedState?.base) {
+                dragDivider.loadState(savedState);
+            } else {
+                console.log("No saved state found. Starting with default configuration.");
+            }
+        });
+    };
+    
+</script>
+
+</html>

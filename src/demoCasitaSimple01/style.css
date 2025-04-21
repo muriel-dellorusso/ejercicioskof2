@@ -1,0 +1,127 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  border: none;
+  outline: none;
+  transition: all 0.3s;
+  scroll-behavior: smooth;
+}
+
+#actividad-dhschools {
+  color: white;
+  font-family: sans-serif;
+  width: 90%;
+  margin: 0 auto;
+}
+
+#actividad-dhschools div.seccion-casa {
+  margin: 0 auto;
+}
+
+#actividad-dhschools div.cuadro-resultado {
+  width: 100%;
+  height: 100%;
+  border: 3px solid rgb(231, 221, 221);
+  background-color: rgb(31, 31, 144);
+  border-radius: 3vw;
+  padding: 4vw;
+  font-family: "VT323", monospace;
+  transition: all 0.3s;
+}
+
+#actividad-dhschools table {
+  border-collapse: collapse;
+  /*background-color: black;*/
+  background-image: url("https://i.ibb.co/HF7rrmQ/estrellas.webp");
+  background-size: cover;
+  overflow: hidden;
+  border-radius: 3vw;
+  /*box-shadow: black 0 0 3.5vmin 3.5vmin inset;*/
+  background-color: black;
+  border: 0px solid black;
+}
+
+#actividad-dhschools td {
+  height: 4vw;
+  width: 4vw;
+  border: 0.1px solid rgba(0, 0, 0, 0.1);
+}
+
+#actividad-dhschools td.v {
+  background-color: rgba(37, 133, 63, 0.5);
+}
+
+#actividad-dhschools td.c {
+  /*background-color: black;*/
+}
+
+#actividad-dhschools td.t,
+#actividad-dhschools td.td,
+#actividad-dhschools td.ti,
+#actividad-dhschools td.ta,
+#actividad-dhschools td.tiab,
+#actividad-dhschools td.tdab,
+#actividad-dhschools td.mensaje {
+  background-color: #bd0000;
+}
+
+#actividad-dhschools td.ta {
+  border-radius: 50% 50% 0 0;
+}
+
+#actividad-dhschools td.td {
+  border-radius: 0 50% 0 0;
+}
+
+#actividad-dhschools td.ti {
+  border-radius: 50% 0 0 0;
+}
+
+#actividad-dhschools td.tdab {
+  border-radius: 0 50% 50% 0;
+}
+
+#actividad-dhschools td.tiab {
+  border-radius: 50% 0 0 50%;
+}
+
+#actividad-dhschools td.bl {
+  background-color: #f0ecb6;
+}
+
+#actividad-dhschools td.p {
+  background-color: #e8e06f;
+}
+
+#actividad-dhschools td.luz1,
+#actividad-dhschools td.luz2,
+#actividad-dhschools td.luz3,
+#actividad-dhschools td.luz4 {
+  background-color: yellow;
+}
+
+#actividad-dhschools select {
+  width: 100%;
+  height: 100%;
+  font-size: 3.5vw;
+}
+
+#actividad-dhschools option {
+  text-align: center;
+}
+
+#actividad-dhschools .prendida {
+  background-color: yellow;
+  color: black;
+}
+
+#actividad-dhschools .apagada {
+  background-color: black;
+  color: lightslategray;
+}
+
+#actividad-dhschools #mensaje {
+  font-size: 3.5vw;
+  transition: all 0.3s;
+}
