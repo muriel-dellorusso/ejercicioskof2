@@ -460,6 +460,15 @@ import { PGEvent } from "./pg-event.js";
   loadExample(indexToLoad);
   showInstructions();
 };
+// Interceptamos postToPg y lo neutralizamos si es "FAILURE"
+const originalPostToPg = window.postToPg;
+window.postToPg = function (data) {
+  if (data.event === "FAILURE") {
+    console.warn("Interceptado evento FAILURE, no se envía al LMS:", data);
+    return; // lo frenamos
+  }
+  originalPostToPg(data); // dejamos pasar el resto
+};
 
   </script>
   
