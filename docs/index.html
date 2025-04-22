@@ -451,28 +451,29 @@ import { PGEvent } from "./pg-event.js";
     document.getElementById("instructions-ok-button").addEventListener("click", () => {
       document.getElementById("instructions-modal").style.display = "none";
     });
-    window.onload = () => {
+window.onload = () => {
   const pgEvent = new PGEvent();
   pgEvent.getValues();
 
+  // Cargamos el ejemplo guardado
   const savedIndex = localStorage.getItem("currentExampleIndex");
   const indexToLoad = savedIndex ? parseInt(savedIndex, 10) : 0;
   loadExample(indexToLoad);
   showInstructions();
+
+  // ——— Aquí viene la “magia”: clonar y reenganchar solo nuestra lógica ———
+  const oldBtn = document.getElementById("verify-button");
+  const newBtn = oldBtn.cloneNode(true);
+  oldBtn.parentNode.replaceChild(newBtn, oldBtn);
+
+  // Ahora attach solo NUESTRO listener
+  newBtn.addEventListener("click", (e) => {
+    e.preventDefault();             // prevenimos cualquier submit o handler externo
+    newBtn.disabled = true;         // igual que antes
+    verifyAnswers();                // nuestra función de validación
+  });
 };
-// Interceptar postToPg y redefinir event si es FAILURE
-window.postToPg = function (data) {
-  console.log("Interceptado y reemplazado:", data);
-  const safeData = {
-    event: "INFO", // Nunca FAILURE
-    message: "Actividad en curso.",
-    reasons: [],
-    state: "{}",
-    type: "neutral-type"
-  };
-  // Podrías simular que sí envías algo, pero inofensivo
-  console.warn("Enviado fake:", safeData);
-};
+
 
 
 
