@@ -359,6 +359,17 @@ import { PGEvent } from "./pg-event.js";
           el.appendChild(icon);
         }, index * 1000);
       });
+function replaceVerifyButton() {
+  const oldBtn = document.getElementById("verify-button");
+  const newBtn = oldBtn.cloneNode(true);
+  oldBtn.parentNode.replaceChild(newBtn, oldBtn);
+
+  newBtn.addEventListener("click", (e) => {
+    e.preventDefault();       // evita cualquier handler previo
+    newBtn.disabled = true;   // tal como antes
+    verifyAnswers();          // nuestro propio flujo de validación
+  });
+}
 
       setTimeout(() => {
         const providedSet = new Set(placedItems.map(el => el.id));
@@ -417,13 +428,16 @@ import { PGEvent } from "./pg-event.js";
       verifyAnswers();
     });
 
-    document.getElementById("reset-button").addEventListener("click", () => {
-  if (dragDivider) dragDivider.resetActivity();
-  const dropZone = document.getElementById("drop-zone");
-  dropZone.innerHTML = `<h2>Errores Detectados</h2>`;
-  document.getElementById("verification-message").innerHTML = "";
-  document.querySelectorAll(".draggable .icon").forEach(icon => icon.remove());
-  document.getElementById("verify-button").disabled = false;
+   document.getElementById("reset-button").addEventListener("click", () => {
+    if (dragDivider) dragDivider.resetActivity();
+    document.getElementById("drop-zone").innerHTML = `<h2>Errores Detectados</h2>`;
+    document.getElementById("verification-message").innerHTML = "";
+    document.querySelectorAll(".draggable .icon").forEach(icon => icon.remove());
+    document.getElementById("verify-button").disabled = false;
+
+    // **reemplazamos el botón otra vez** para que no quede ningún listener LMS
+    replaceVerifyButton();
+  });
 
   // (Opcional) borrar progreso guardado:
   // localStorage.removeItem("currentExampleIndex");
@@ -451,9 +465,20 @@ import { PGEvent } from "./pg-event.js";
     document.getElementById("instructions-ok-button").addEventListener("click", () => {
       document.getElementById("instructions-modal").style.display = "none";
     });
-window.onload = () => {
-  const pgEvent = new PGEvent();
-  pgEvent.getValues();
+      const originalLoadExample = loadExample;
+  window.loadExample = function(index) {
+    originalLoadExample(index);
+    replaceVerifyButton();
+  };
+  window.onload = () => {
+    const pgEvent = new PGEvent();
+    pgEvent.getValues();
+
+    const savedIndex = localStorage.getItem("currentExampleIndex");
+    const indexToLoad = savedIndex ? parseInt(savedIndex, 10) : 0;
+    loadExample(indexToLoad);
+    showInstructions();
+  };
 
   // Cargamos el ejemplo guardado
   const savedIndex = localStorage.getItem("currentExampleIndex");
