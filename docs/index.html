@@ -149,7 +149,7 @@
     </div>
     <div id="bank-container"></div>
     <div class="buttons-row">
-      <button id="verify-button">Guardar y verificar</button>
+<button id="verify-btn-custom" type="button">Guardar y verificar</button>
       <button id="reset-button">Reiniciar</button>
     </div>
 
@@ -323,7 +323,7 @@
     dragDivider = new DragDivider({
       base: { element: bankContainer, items },
       categories: [{ name: "drop", element: dropZone }],
-      verifyButton: document.getElementById("verify-button"),
+  verifyButton: document.getElementById("verify-btn-custom"),
       messages: {
         onSuccess: "¡Felicidades! Todas las respuestas son correctas.",
         onFail:    "Algunas respuestas no son correctas, revisá el error y presioná 'Reiniciar'.",
