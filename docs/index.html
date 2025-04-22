@@ -196,63 +196,133 @@
   // 2) Ejemplos
   const examples = [
     {
-      description: `Estás intentando cambiar tu nombre de usuario en un videojuego...`,
-      interface: `<div style="padding:20px;"><button style="/* … */">guardar</button></div>`,
-      expected: ["draggable-forma","draggable-medida"],
-      hint: `Pensá cuando vas a una página web…`
+      description: `Estás intentando cambiar tu nombre de usuario en un videojuego y una vez que terminás de elegirlo, este es el botón que ves abajo para guardar y continuar con la siguiente pantalla. ¿Qué te llama la atención? ¿Podés leer lo que dice? ¿De qué forma suelen ser los botones para guardar o editar datos en una página o en un juego?`,
+      interface: `
+        <div style="padding: 20px;">
+          <button style="
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            width: 140px;
+            height: 40px;
+            font-size: 30px;
+            background: #ddd;
+            color: #000000 !important;
+            border: none;
+            border-radius: 5px;
+          ">guardar</button>
+        </div>
+      `,
+      expected: ["draggable-forma", "draggable-medida"],
+      hint: `Pensá cuando vas a una página web y necesitás apretar un botón, ¿te parece que tiene esa forma? Podés mirar los botones que están en esta misma actividad para guiarte.
+      ¿Te parece que el tamaño del texto y del botón están bien? Pensá si la medida de ambos es acorde entre sí.`
     },
-    /* … el resto de tus ejemplos … */
+    {
+      description: `Querés registrarte en un juego en línea, pero este es el recuadro que te aparece para poner tu nombre. ¿Podés escribirlo correctamente? ¿Entenderías qué es lo que tenés que completar si no hubieras leído la consigna? ¿El tamaño te parece muy grande, muy chico o así te parece bien?`,
+      interface: `
+        <div style="padding: 0px;">
+          <div style="display: inline-block; position: relative; width: 430px; height: 214px; background: black; box-sizing: border-box; clip-path: polygon(55% 0%, 100% 50%, 50% 100%, 0% 50%); transform: rotate(23deg);">
+            <input type="text" placeholder="Escribe tu nombre" style="
+              clip-path: polygon(55% 0%, 100% 50%, 50% 100%, 0% 50%);
+              border: 2px solid #ccc;
+              padding: 5px;
+              position: absolute;
+              top: 2px;
+              left: 2px;
+              width: 426px;
+              height: 210px;
+            ">
+          </div>
+        </div>
+      `,
+      expected: ["draggable-medida", "draggable-direccion", "draggable-forma"],
+      hint: `Pensá en cuando te estás registrando en un juego, ¿el recuadro para poner el nombre de usuario es en forma de círculo o no es lo más usual? Si es un recuadro donde sólo tenés que poner tu nombre, ¿lo harías de un tamaño tan grande?
+      ¿Se puede escribir correctamente si el recuadro está torcido? ¿Qué dirección tendría que tener?`
+    },
+    {
+      description: `Estás tratando de leer un artículo en Wikipedia, pero el primer párrafo se ve así. ¿Tenés que acercarte mucho para entender lo que dicen las letras? ¿Es cómodo leer con la cabeza inclinada y con ese tamaño de texto o creés que podría mejorarse?`,
+      interface: `
+        <div style="padding: 20px;">
+          <p style="
+            width: 300px;
+            font-size: 8px;
+            transform: rotate(-5deg);
+            line-height: 1.2;
+            margin: 0 auto;
+          ">
+            ¡Estamos viendo los principios del diseño con Digital House Schools! En esta actividad vamos a jugar a encontrar cuál es el error dentro de cada diseño siguiendo los conceptos que vimos en clase. ¿Están listos?
+          </p>
+        </div>
+      `,
+      expected: ["draggable-direccion", "draggable-medida"],
+      hint: `Si tuvieras que leer un libro entero en Internet de esta manera, probablemente te sería muy complicado. ¿El tamaño del texto no te parece muy chico? Si tenés que inclinar la cabeza para leerlo, ¿no habría que enderezar un poco la dirección del texto?`
+    },
+    {
+      description: `Estás tratando de leer un libro en Internet, pero cuando querés pasar a la siguiente página, ves los botones posicionados de esta manera. ¿Te confunde cómo ir para la próxima página y cómo ir a la anterior?`,
+      interface: `
+        <div style="padding: 20px;">
+          <div style="position: relative; width: 200px; height: 50px; margin: 0 auto;">
+            <button style="padding: 10px !important; margin: 5px;">Siguiente</button>
+            <button style="padding: 10px !important; margin: 5px;">Atrás</button>
+          </div>
+        </div>
+      `,
+      expected: ["draggable-posicion"],
+      hint: `Si tenés que seguir hacia adelante en una página, y el botón que encontrás te lleva atrás, ¿te confunde? Si querés ir para atrás y te encontrás con un botón que te lleva hacia adelante, ¿encontrarías lo que necesitás? 
+      Si cambiáramos la posición de los botones, ¿te sería más fácil navegar por la página?`
+    },
+    {
+      description: `Querés arrancar a jugar un juego y el único botón que ves en pantalla es este. ¿Podés leerlo bien? ¿Tuviste que hacer mucho esfuerzo para hacerlo? ¿Creés que un usuario con problemas de visión podría usar esta página sin problemas? ¿De qué otra manera podríamos diseñar el botón para no tener problemas?`,
+      interface: `
+        <div style="padding: 20px;">
+          <button style="
+            background-color: #fffca9;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+          ">Ejecutar</button>
+        </div>
+      `,
+      expected: ["draggable-color"],
+      hint: `Si tenés que apretar este botón, ¿sabrías lo que hace?
+      Incluso si pudieras leer lo que dice, pensá que cuando diseñamos tenemos que hacer algo que todos podamos usar cómodamente. ¿Te parece cómodo a la vista tener un botón así, o con otros colores te parece que se leería mejor?`
+    }
   ];
 
   let currentExampleIndex = 0;
   let dragDivider;
 
-  // 3) Parche para el botón de Verificar: clonar, quitar listeners externos y añadir solo el nuestro
-  function replaceVerifyButton() {
-    const oldBtn = document.getElementById("verify-button");
-    if (!oldBtn) return;
-    const newBtn = oldBtn.cloneNode(true);
-    oldBtn.parentNode.replaceChild(newBtn, oldBtn);
-
-    newBtn.addEventListener("click", e => {
-      e.preventDefault();
-      e.stopImmediatePropagation();  // evita otros handlers en este elemento
-      e.stopPropagation();           // evita handlers delegados
-      newBtn.disabled = true;
-      verifyAnswers();
-    });
-  }
-
-  // 4) Renderiza el banco de ítems
+  // 3) Renderiza el banco de ítems
   function renderBank() {
     const bankContainer = document.getElementById("bank-container");
     bankContainer.innerHTML = "";
-    draggableItemsData.forEach(item => {
+    draggableItemsData.forEach(itemData => {
       const el = document.createElement("div");
-      el.className = "draggable";
-      el.id = item.id;
-      el.textContent = item.label;
+      el.classList.add("draggable");
+      el.id = itemData.id;
+      el.textContent = itemData.label;
       bankContainer.appendChild(el);
     });
   }
 
-  // 5) Carga un ejemplo y aplica el parche al botón
+  // 4) Carga un ejemplo y aplica lógica normal
   function loadExample(index) {
     currentExampleIndex = index;
     document.getElementById("example-description").innerHTML = examples[index].description;
-    document.getElementById("example-interface").innerHTML   = examples[index].interface;
+    document.getElementById("example-interface").innerHTML = examples[index].interface;
     const dropZone = document.getElementById("drop-zone");
     dropZone.innerHTML = `<h2>Errores Detectados</h2>`;
     renderBank();
 
-    const items = draggableItemsData.map(item => ({
-      element: document.getElementById(item.id),
-      expectedCategory: examples[index].expected.includes(item.id) ? "drop" : "bank"
+    const bankContainer = document.getElementById("bank-container");
+    const items = draggableItemsData.map(itemData => ({
+      element: document.getElementById(itemData.id),
+      expectedCategory: examples[index].expected.includes(itemData.id) ? "drop" : "bank"
     }));
 
     dragDivider = new DragDivider({
-      base:      { element: document.getElementById("bank-container"), items },
-      categories:[ { name: "drop", element: dropZone } ],
+      base: { element: bankContainer, items },
+      categories: [{ name: "drop", element: dropZone }],
       verifyButton: document.getElementById("verify-button"),
       messages: {
         onSuccess: "¡Felicidades! Todas las respuestas son correctas.",
@@ -263,82 +333,83 @@
 
     document.getElementById("verification-message").textContent = "";
     document.getElementById("verify-button").disabled = false;
-
-    // Parche: siempre reemplaza el botón
-    replaceVerifyButton();
   }
 
-  // 6) Verifica respuestas
+  // 5) Verifica las respuestas
   function verifyAnswers() {
     const expectedSet = new Set(examples[currentExampleIndex].expected);
     const dropZone = document.getElementById("drop-zone");
     const placedItems = Array.from(dropZone.querySelectorAll(".draggable"));
 
-    placedItems.forEach((el, i) => {
+    placedItems.forEach((el, idx) => {
       setTimeout(() => {
         const icon = document.createElement("span");
         const correct = expectedSet.has(el.id);
-        icon.className = `icon ${correct? "correct":"incorrect"}`;
-        icon.textContent = correct? "✓":"✗";
+        icon.classList.add("icon", correct ? "correct" : "incorrect");
+        icon.textContent = correct ? "✓" : "✗";
         el.appendChild(icon);
-      }, i * 500);
+      }, idx * 500);
     });
 
     setTimeout(() => {
-      const providedSet = new Set(placedItems.map(el=>el.id));
-      const totalExp = expectedSet.size;
-      const totalProv= providedSet.size;
+      const providedSet = new Set(placedItems.map(el => el.id));
+      const totalExpected = expectedSet.size;
+      const totalProvided = providedSet.size;
       const correctCount = placedItems.filter(el => expectedSet.has(el.id)).length;
-      let msg = "";
+      let message = "";
 
-      if (totalProv === 0) {
-        msg = "No se han depositado respuestas.";
-      } else if (correctCount === totalExp && totalProv === totalExp) {
-        msg = "¡Felicidades! Todas las respuestas son correctas.";
+      if (totalProvided === 0) {
+        message = "No se han depositado respuestas.";
+      } else if (correctCount === totalExpected && totalProvided === totalExpected) {
+        message = "¡Felicidades! Todas las respuestas son correctas.";
       } else if (correctCount === 0) {
-        msg = "¡Reintentá! Si necesitás ayuda, podés presionar el botón de 'Pista'.";
-      } else if (correctCount === totalProv && totalProv < totalExp) {
-        msg = "Todas las respuestas depositadas son correctas, pero faltan una o más. Presioná 'Reiniciar' o 'Pista'.";
+        message = "¡Reintentá! Si necesitás ayuda, podés presionar el botón de 'Pista'.";
+      } else if (correctCount === totalProvided && totalProvided < totalExpected) {
+        message = "Todas las respuestas depositadas son correctas, pero faltan una o más. Presioná 'Reiniciar' para seguir o, si necesitás ayuda, podés presionar el botón de 'Pista'.";
       } else {
-        msg = "Hay varias respuestas correctas, pero una o más no lo están. Presioná 'Reiniciar' o 'Pista'.";
+        message = "Hay varias respuestas correctas, pero una o más no lo están. Presioná 'Reiniciar' para seguir o, si necesitás ayuda, podés presionar el botón de 'Pista'.";
       }
 
-      const msgContainer = document.getElementById("verification-message");
-      msgContainer.textContent = msg;
+      const messageContainer = document.getElementById("verification-message");
+      messageContainer.textContent = message;
 
-      if (msg.startsWith("¡Felicidades!")) {
-        const btn = document.createElement("button");
+      if (message.startsWith("¡Felicidades!")) {
         if (currentExampleIndex < examples.length - 1) {
-          btn.id = "next-example";
-          btn.textContent = "Siguiente ejemplo";
-          btn.addEventListener("click", () => {
-            const next = currentExampleIndex + 1;
-            localStorage.setItem("currentExampleIndex", next);
-            loadExample(next);
+          const nextBtn = document.createElement("button");
+          nextBtn.id = "next-example";
+          nextBtn.textContent = "Siguiente ejemplo";
+          nextBtn.addEventListener("click", () => {
+            const nextIndex = currentExampleIndex + 1;
+            localStorage.setItem("currentExampleIndex", nextIndex);
+            loadExample(nextIndex);
           });
+          messageContainer.appendChild(document.createElement("br"));
+          messageContainer.appendChild(nextBtn);
         } else {
-          btn.id = "play-again";
-          btn.textContent = "Jugar de nuevo";
-          btn.addEventListener("click", () => {
+          const playAgainBtn = document.createElement("button");
+          playAgainBtn.id = "play-again";
+          playAgainBtn.textContent = "Jugar de nuevo";
+          playAgainBtn.addEventListener("click", () => {
             localStorage.setItem("currentExampleIndex", 0);
             loadExample(0);
           });
+          messageContainer.appendChild(document.createElement("br"));
+          messageContainer.appendChild(playAgainBtn);
         }
-        msgContainer.appendChild(document.createElement("br"));
-        msgContainer.appendChild(btn);
       }
     }, placedItems.length * 600);
   }
 
-  // 7) Botón Reiniciar
+  // 6) Listener del botón Verificar
+  document.getElementById("verify-button").addEventListener("click", () => {
+    document.getElementById("verify-button").disabled = true;
+    verifyAnswers();
+  });
+
+  // 7) Listener del botón Reiniciar ➞ vuelve al primer ejercicio
   document.getElementById("reset-button").addEventListener("click", () => {
-    if (dragDivider) dragDivider.resetActivity();
-    document.getElementById("drop-zone").innerHTML = `<h2>Errores Detectados</h2>`;
-    document.getElementById("verification-message").textContent = "";
-    document.querySelectorAll(".draggable .icon").forEach(ic => ic.remove());
-    document.getElementById("verify-button").disabled = false;
-    // Reemplaza de nuevo para quitar cualquier listener externo
-    replaceVerifyButton();
+    localStorage.setItem("currentExampleIndex", 0);
+    loadExample(0);
   });
 
   // 8) Pistas e instrucciones
@@ -359,13 +430,13 @@
     document.getElementById("instructions-modal").style.display = "none";
   });
 
-  // 9) Inicio
+  // 9) Inicio: carga progreso y muestra instrucciones
   window.onload = () => {
     const pgEvent = new PGEvent();
     pgEvent.getValues();
-    const saved = localStorage.getItem("currentExampleIndex");
-    const toLoad = saved ? parseInt(saved, 10) : 0;
-    loadExample(toLoad);
+    const savedIndex = localStorage.getItem("currentExampleIndex");
+    const indexToLoad = savedIndex ? parseInt(savedIndex, 10) : 0;
+    loadExample(indexToLoad);
     showInstructions();
   };
 </script>
