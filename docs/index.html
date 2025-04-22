@@ -419,7 +419,7 @@
     document.getElementById("reset-button").addEventListener("click", () => {
   if (dragDivider) dragDivider.resetActivity();
   const dropZone = document.getElementById("drop-zone");
-  dropZone.innerHTML = <h2>Errores Detectados</h2>;
+  dropZone.innerHTML = `<h2>Errores Detectados</h2>`;
   document.getElementById("verification-message").innerHTML = "";
   document.querySelectorAll(".draggable .icon").forEach(icon => icon.remove());
   document.getElementById("verify-button").disabled = false;
