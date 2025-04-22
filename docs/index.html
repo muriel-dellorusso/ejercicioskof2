@@ -181,8 +181,8 @@
   </div>
 
   <script type="module">
-    import { DragDivider } from "./shared/drag.js";
-    import { PGEvent } from "./shared/pg-event.js";
+    import { DragDivider } from "../shared/drag.js";
+    import { PGEvent } from "../shared/pg-event.js";
 
     const draggableItemsData = [
       { id: "draggable-forma", label: "Forma" },
@@ -388,8 +388,11 @@
             nextBtn.id = "next-example";
             nextBtn.textContent = "Siguiente ejemplo";
             nextBtn.addEventListener("click", () => {
-              loadExample(currentExampleIndex + 1);
+            const nextIndex = currentExampleIndex + 1;
+            localStorage.setItem("currentExampleIndex", nextIndex);
+            loadExample(nextIndex);
             });
+
             messageContainer.appendChild(document.createElement("br"));
             messageContainer.appendChild(nextBtn);
           } else {
@@ -397,8 +400,10 @@
             playAgainBtn.id = "play-again";
             playAgainBtn.textContent = "Jugar de nuevo";
             playAgainBtn.addEventListener("click", () => {
-              loadExample(0);
-            });
+            localStorage.setItem("currentExampleIndex", 0);
+            loadExample(0);
+          });
+
             messageContainer.appendChild(document.createElement("br"));
             messageContainer.appendChild(playAgainBtn);
           }
@@ -412,13 +417,17 @@
     });
 
     document.getElementById("reset-button").addEventListener("click", () => {
-      if (dragDivider) dragDivider.resetActivity();
-      const dropZone = document.getElementById("drop-zone");
-      dropZone.innerHTML = `<h2>Errores Detectados</h2>`;
-      document.getElementById("verification-message").innerHTML = "";
-      document.querySelectorAll(".draggable .icon").forEach(icon => icon.remove());
-      document.getElementById("verify-button").disabled = false;
-    });
+  if (dragDivider) dragDivider.resetActivity();
+  const dropZone = document.getElementById("drop-zone");
+  dropZone.innerHTML = `<h2>Errores Detectados</h2>`;
+  document.getElementById("verification-message").innerHTML = "";
+  document.querySelectorAll(".draggable .icon").forEach(icon => icon.remove());
+  document.getElementById("verify-button").disabled = false;
+
+  // (Opcional) borrar progreso guardado:
+  // localStorage.removeItem("currentExampleIndex");
+});
+
 
     function showHint() {
       const hintText = examples[currentExampleIndex].hint;
@@ -441,13 +450,16 @@
     document.getElementById("instructions-ok-button").addEventListener("click", () => {
       document.getElementById("instructions-modal").style.display = "none";
     });
-
     window.onload = () => {
-      const pgEvent = new PGEvent();
-      pgEvent.getValues();
-      loadExample(0);
-      showInstructions();
-    };
+  const pgEvent = new PGEvent();
+  pgEvent.getValues();
+
+  const savedIndex = localStorage.getItem("currentExampleIndex");
+  const indexToLoad = savedIndex ? parseInt(savedIndex, 10) : 0;
+  loadExample(indexToLoad);
+  showInstructions();
+};
+
   </script>
   
   <div id="instructions-modal" class="modal">
@@ -463,4 +475,6 @@
     </div>
   </div>
 </body>
+</html>
+
 </html>
