@@ -431,14 +431,31 @@
   });
 
   // 9) Inicio: carga progreso y muestra instrucciones
-  window.onload = () => {
-    const pgEvent = new PGEvent();
-    pgEvent.getValues();
-    const savedIndex = localStorage.getItem("currentExampleIndex");
-    const indexToLoad = savedIndex ? parseInt(savedIndex, 10) : 0;
-    loadExample(indexToLoad);
-    showInstructions();
-  };
+ <script>
+window.onload = () => {
+  const pgEvent = new PGEvent();
+  pgEvent.getValues();
+
+  // Cargamos el ejemplo guardado
+  const savedIndex = localStorage.getItem("currentExampleIndex");
+  const indexToLoad = savedIndex ? parseInt(savedIndex, 10) : 0;
+  loadExample(indexToLoad);
+  showInstructions();
+
+  // ——— Aquí viene la “magia”: clonar y reenganchar solo nuestra lógica ———
+  const oldBtn = document.getElementById("verify-button");
+  const newBtn = oldBtn.cloneNode(true);
+  oldBtn.parentNode.replaceChild(newBtn, oldBtn);
+
+  // Ahora attach solo NUESTRO listener
+  newBtn.addEventListener("click", (e) => {
+    e.preventDefault();             // prevenimos cualquier submit o handler externo
+    newBtn.disabled = true;         // igual que antes
+    verifyAnswers();                // nuestra función de validación
+  });
+};
+</script>
+
 </script>
 
   <div id="instructions-modal" class="modal">
