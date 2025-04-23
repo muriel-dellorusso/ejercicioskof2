@@ -433,13 +433,13 @@ import { PGEvent } from "./pg-event.js";
   messageContainer.appendChild(document.createElement("br"));
   messageContainer.appendChild(raw);
 
-  // 2. pásalo por makeSafeButton para frenar el listener del LMS
-  makeSafeButton("play-again", () => {
-    localStorage.setItem("currentExampleIndex", 0);
-    loadExample(0);
-          }, placedItems.length * 1000 + 500);
+    // 2) pasarlo por makeSafeButton para frenar el listener del LMS
+    makeSafeButton("play-again", () => {
+      localStorage.setItem("currentExampleIndex", 0);
+      loadExample(0);
+    });
 
-  });
+  }, placedItems.length * 1000 + 500);   //  ← el delay va aquí
 }
 
     
