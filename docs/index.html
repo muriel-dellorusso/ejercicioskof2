@@ -308,7 +308,7 @@ import { PGEvent } from "./pg-event.js";
       document.getElementById("example-description").innerHTML = examples[index].description;
       document.getElementById("example-interface").innerHTML = examples[index].interface;
       const dropZone = document.getElementById("drop-zone");
-      dropZone.innerHTML = `<h2>Errores Detectados</h2>`;
+      dropZone.innerHTML = <h2>Errores Detectados</h2>;
       renderBank();
 
       const bankContainer = document.getElementById("bank-container");
@@ -419,7 +419,7 @@ import { PGEvent } from "./pg-event.js";
     document.getElementById("reset-button").addEventListener("click", () => {
   if (dragDivider) dragDivider.resetActivity();
   const dropZone = document.getElementById("drop-zone");
-  dropZone.innerHTML = `<h2>Errores Detectados</h2>`;
+  dropZone.innerHTML = <h2>Errores Detectados</h2>;
   document.getElementById("verification-message").innerHTML = "";
   document.querySelectorAll(".draggable .icon").forEach(icon => icon.remove());
   document.getElementById("verify-button").disabled = false;
