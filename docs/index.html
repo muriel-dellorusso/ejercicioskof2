@@ -175,50 +175,79 @@
     </div>
   </div>
 
-  <script type="module">
-    import { DragDivider } from "./drag.js";
-    import { PGEvent } from "./pg-event.js";
+<script type="module">
+import { DragDivider } from "./drag.js";
+import { PGEvent } from "./pg-event.js";
 
-    // ... (configuración de draggableItemsData, examples, funciones renderBank, loadExample, verifyAnswers, showHint, showInstructions; idénticas a antes)
+const draggableItemsData = [
+  /* … tu array … */
+];
+const examples = [
+  /* … tu array … */
+];
 
-    document.getElementById("verify-button").addEventListener("click", () => {
-      document.getElementById("verify-button").disabled = true;
-      verifyAnswers();
-    });
+let currentExampleIndex = 0;
+let dragDivider;
 
-    // Quitamos aquí el listener original de reset y lo clonamos más abajo.
+function renderBank() { /* … idéntico … */ }
+function loadExample(index) { /* … idéntico … */ }
+function verifyAnswers() { /* … idéntico … */ }
+function showHint() { /* … idéntico … */ }
+function showInstructions() { /* … idéntico … */ }
 
-    window.onload = () => {
-      const pgEvent = new PGEvent();
-      pgEvent.getValues();
+// Attach handlers “normales”
+document.getElementById("verify-button")
+        .addEventListener("click", () => {
+  document.getElementById("verify-button").disabled = true;
+  verifyAnswers();
+});
+document.getElementById("hint-button")
+        .addEventListener("click", showHint);
+document.getElementById("hint-ok-button")
+        .addEventListener("click", () => {
+  document.getElementById("hint-modal").style.display = "none";
+});
+document.getElementById("instructions-button")
+        .addEventListener("click", showInstructions);
+document.getElementById("instructions-ok-button")
+        .addEventListener("click", () => {
+  document.getElementById("instructions-modal").style.display = "none";
+});
 
-      // Cargamos el ejemplo guardado
-      const savedIndex = localStorage.getItem("currentExampleIndex");
-      const indexToLoad = savedIndex ? parseInt(savedIndex, 10) : 0;
-      loadExample(indexToLoad);
-      showInstructions();
+// ——— Aquí hacemos la “magia” nada más cargar el módulo ———
+const pgEvent = new PGEvent();
+pgEvent.getValues();
 
-      // ——— Hack: clonar y reenganchar nuestro verify-button ———
-      const oldVerify = document.getElementById("verify-button");
-      const newVerify = oldVerify.cloneNode(true);
-      oldVerify.parentNode.replaceChild(newVerify, oldVerify);
-      newVerify.addEventListener("click", (e) => {
-        e.preventDefault();
-        newVerify.disabled = true;
-        verifyAnswers();
-      });
+const savedIndex = localStorage.getItem("currentExampleIndex");
+const indexToLoad = savedIndex ? parseInt(savedIndex, 10) : 0;
+loadExample(indexToLoad);
+showInstructions();
 
-      // ——— Nuevo hack: clonar y reenganchar nuestro reset-button ———
-      const oldReset = document.getElementById("reset-button");
-      const newReset = oldReset.cloneNode(true);
-      oldReset.parentNode.replaceChild(newReset, oldReset);
-      newReset.addEventListener("click", (e) => {
-        e.preventDefault();
-        // Reiniciar al primer ejemplo
-        localStorage.setItem("currentExampleIndex", 0);
-        loadExample(0);
-      });
-    };
-  </script>
+// Clonamos y reenganchamos verify-button (para no romper el LMS)
+{
+  const oldBtn = document.getElementById("verify-button");
+  const newBtn = oldBtn.cloneNode(true);
+  oldBtn.parentNode.replaceChild(newBtn, oldBtn);
+  newBtn.addEventListener("click", e => {
+    e.preventDefault();
+    newBtn.disabled = true;
+    verifyAnswers();
+  });
+}
+
+// Clonamos y reenganchamos reset-button (“Volver a empezar”)
+{
+  const oldBtn = document.getElementById("reset-button");
+  const newBtn = oldBtn.cloneNode(true);
+  oldBtn.parentNode.replaceChild(newBtn, oldBtn);
+  newBtn.addEventListener("click", e => {
+    e.preventDefault();
+    // volvemos al primer ejemplo y lo guardamos
+    localStorage.setItem("currentExampleIndex", 0);
+    loadExample(0);
+  });
+}
+</script>
+
 </body>
 </html>
