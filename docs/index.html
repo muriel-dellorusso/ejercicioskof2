@@ -416,24 +416,38 @@ import { PGEvent } from "./pg-event.js";
       verifyAnswers();
     });
 
-    document.getElementById("reset-button").addEventListener("click", () => {
-  // 1. Reset de estado interno de DragDivider
-  if (dragDivider) dragDivider.resetActivity();
-
-  // 2. Limpia la zona de drop
+document.getElementById("reset-button").addEventListener("click", () => {
+  // 1) Limpias drop-zone y mensaje
   const dropZone = document.getElementById("drop-zone");
   dropZone.innerHTML = `<h2>Errores Detectados</h2>`;
+  document.getElementById("verification-message").textContent = "";
 
-  // 3. Re-renderiza las tarjetas en el banco
+  // 2) Vuelves a crear las tarjetas en el banco
   renderBank();
 
-  // 4. Borra mensaje y cualquier ícono residual
-  document.getElementById("verification-message").textContent = "";
-  document.querySelectorAll(".draggable .icon").forEach(icon => icon.remove());
+  // 3) Vuelves a instanciar el DragDivider con los nuevos elementos
+  const bankContainer = document.getElementById("bank-container");
+  const items = draggableItemsData.map(itemData => ({
+    element: document.getElementById(itemData.id),
+    expectedCategory: examples[currentExampleIndex].expected.includes(itemData.id)
+      ? "drop"
+      : "bank"
+  }));
+  dragDivider = new DragDivider({
+    base: { element: bankContainer, items },
+    categories: [{ name: "drop", element: dropZone }],
+    verifyButton: document.getElementById("verify-button"),
+    messages: {
+      onSuccess: "¡Felicidades! Todas las respuestas son correctas.",
+      onFail: "Algunas respuestas no son correctas, revisá el error y presioná 'Reiniciar'.",
+      onReset: "Actividad reiniciada."
+    }
+  });
 
-  // 5. Reactiva el botón de verificación
+  // 4) Reactivas el botón
   document.getElementById("verify-button").disabled = false;
 });
+
 
 
     function showHint() {
