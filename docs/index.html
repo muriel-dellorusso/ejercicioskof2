@@ -191,15 +191,27 @@ import { PGEvent     } from "./pg-event.js";
 /*  HELPER anti-LMS                                                   */
 /* ------------------------------------------------------------------ */
 /** Clona el botón para eliminar listeners del LMS y engancha sólo el tuyo */
+/**
+ * Clona el botón (id) para eliminar listeners del LMS y
+ * engancha nuestro handler en CAPTURA + BURBUJEO.
+ */
 function makeSafeButton(id, handler) {
   const oldBtn = document.getElementById(id);
-  const newBtn = oldBtn.cloneNode(true);   // copia atributos + texto
-  oldBtn.replaceWith(newBtn);              // swap DOM → listeners LMS fuera
-  newBtn.addEventListener("click", (e) => {
+  const newBtn = oldBtn.cloneNode(true);
+  oldBtn.replaceWith(newBtn);
+
+  /* Bloqueo total: captura → propio handler → fin del evento */
+  const guard = (e) => {
     e.preventDefault();
-    e.stopPropagation();                   // bloquea burbuja al LMS
-    handler(newBtn, e);
-  });
+    e.stopImmediatePropagation();  // frena captura + burbujeo
+    handler(newBtn, e);            // nuestra lógica
+  };
+
+  /* Fase de captura (antes que el LMS) */
+  newBtn.addEventListener("click", guard, true);
+  /* Fase de burbujeo (por las dudas) */
+  newBtn.addEventListener("click", guard, false);
+
   return newBtn;
 }
 
