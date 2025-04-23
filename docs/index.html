@@ -424,21 +424,25 @@ import { PGEvent } from "./pg-event.js";
 
             messageContainer.appendChild(document.createElement("br"));
             messageContainer.appendChild(nextBtn);
-          } else {
-            const playAgainBtn = document.createElement("button");
-            playAgainBtn.id = "play-again";
-            playAgainBtn.textContent = "Jugar de nuevo";
-            playAgainBtn.addEventListener("click", () => {
-            localStorage.setItem("currentExampleIndex", 0);
-            loadExample(0);
-          });
+          } /* ——— Último ejemplo: botón “Jugar de nuevo” ——— */
+} else {
+  // 1. crea el botón “en bruto” y añádelo al DOM
+  const raw = document.createElement("button");
+  raw.id = "play-again";
+  raw.textContent = "Jugar de nuevo";
+  messageContainer.appendChild(document.createElement("br"));
+  messageContainer.appendChild(raw);
 
-            messageContainer.appendChild(document.createElement("br"));
-            messageContainer.appendChild(playAgainBtn);
-          }
-        }
-      }, placedItems.length * 1000 + 500);
-    }
+  // 2. pásalo por makeSafeButton para frenar el listener del LMS
+  makeSafeButton("play-again", () => {
+    localStorage.setItem("currentExampleIndex", 0);
+    loadExample(0);
+          }, placedItems.length * 1000 + 500);
+
+  });
+}
+
+    
 
     document.getElementById("verify-button").addEventListener("click", () => {
       document.getElementById("verify-button").disabled = true;
