@@ -490,16 +490,16 @@ window.onload = () => {
   showInstructions();
 
   // ——— Aquí viene la “magia”: clonar y reenganchar solo nuestra lógica ———
-  const oldBtn = document.getElementById("verify-button");
-  const newBtn = oldBtn.cloneNode(true);
-  oldBtn.parentNode.replaceChild(newBtn, oldBtn);
+ const oldBtn = document.getElementById("verify-button");
+const newBtn = oldBtn.cloneNode(true);
+oldBtn.parentNode.replaceChild(newBtn, oldBtn);
 
-  // Ahora attach solo NUESTRO listener
-  newBtn.addEventListener("click", (e) => {
-    e.preventDefault();             // prevenimos cualquier submit o handler externo
-    newBtn.disabled = true;         // igual que antes
-    verifyAnswers();                // nuestra función de validación
-  });
+newBtn.addEventListener("click", (e) => {
+  e.preventDefault();      // evita submits
+  e.stopPropagation();     // ← BLOQUEA al LMS
+  newBtn.disabled = true;
+  verifyAnswers();
+});
 
   makeSafeButton("reset-button", () => resetUI());
 };
