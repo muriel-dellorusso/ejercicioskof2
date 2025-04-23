@@ -417,14 +417,22 @@ import { PGEvent } from "./pg-event.js";
     });
 
     document.getElementById("reset-button").addEventListener("click", () => {
+  // 1. Reset de estado interno de DragDivider
   if (dragDivider) dragDivider.resetActivity();
+
+  // 2. Limpia la zona de drop
   const dropZone = document.getElementById("drop-zone");
   dropZone.innerHTML = `<h2>Errores Detectados</h2>`;
-  document.getElementById("verification-message").innerHTML = "";
+
+  // 3. Re-renderiza las tarjetas en el banco
+  renderBank();
+
+  // 4. Borra mensaje y cualquier ícono residual
+  document.getElementById("verification-message").textContent = "";
   document.querySelectorAll(".draggable .icon").forEach(icon => icon.remove());
+
+  // 5. Reactiva el botón de verificación
   document.getElementById("verify-button").disabled = false;
-
-
 });
 
 
