@@ -442,12 +442,6 @@ import { PGEvent } from "./pg-event.js";
   }, placedItems.length * 1000 + 500);   //  ← el delay va aquí
 }
 
-    
-
-    document.getElementById("verify-button").addEventListener("click", () => {
-      document.getElementById("verify-button").disabled = true;
-      verifyAnswers();
-    });
 
     document.getElementById("reset-button").addEventListener("click", () => {
   if (dragDivider) dragDivider.resetActivity();
