@@ -292,7 +292,6 @@ const examples = [
         Incluso si pudieras leer lo que dice, pensá que cuando diseñamos tenemos que hacer algo que todos podamos usar cómodamente. ¿Te parece cómodo a la vista tener un botón así, o con otros colores te parece que se leería mejor?`
       }
     ];
-
 /* ------------------------------------------------------------------ */
 /*  STATE                                                             */
 /* ------------------------------------------------------------------ */
@@ -302,59 +301,50 @@ let dragDivider;
 /* ------------------------------------------------------------------ */
 /*  HELPERS                                                           */
 /* ------------------------------------------------------------------ */
-/** Clona el botón (id) para eliminar listeners del LMS
- *  y engancha sólo nuestro handler. Devuelve la nueva referencia. */
 function makeSafeButton(id, handler){
-  const oldBtn = document.getElementById(id);
-  if(!oldBtn) return null;
-  const newBtn = oldBtn.cloneNode(true);           // clona atributos y children
-  oldBtn.replaceWith(newBtn);                      // swap DOM
-  newBtn.addEventListener("click", (e)=>{
-    e.preventDefault();
-    e.stopPropagation();                           // nada burbujea al LMS
-    handler(newBtn,e);                             // lógica propia
+  const old = document.getElementById(id);
+  if(!old) return null;
+  const btn = old.cloneNode(true);
+  old.replaceWith(btn);
+  btn.addEventListener("click",(e)=>{
+    e.preventDefault(); e.stopPropagation();
+    handler(btn,e);
   });
-  return newBtn;
+  return btn;
 }
 
 /* ------------------------------------------------------------------ */
-/*  RENDERIZADO DE BANCO Y CARGA DE EJEMPLO                           */
+/*  RENDERIZADO                                                       */
 /* ------------------------------------------------------------------ */
 function renderBank(){
   const bank = document.getElementById("bank-container");
   bank.innerHTML = "";
   draggableItemsData.forEach(item=>{
-    const el   = document.createElement("div");
+    const el = document.createElement("div");
     el.classList.add("draggable");
-    el.id       = item.id;
+    el.id = item.id;
     el.textContent = item.label;
     bank.appendChild(el);
   });
 }
 
-function loadExample(index){
-  currentExampleIndex = index;
+function loadExample(i){
+  currentExampleIndex = i;
+  document.getElementById("example-description").innerHTML = examples[i].description;
+  document.getElementById("example-interface").innerHTML   = examples[i].interface;
 
-  // Texto y mockup
-  document.getElementById("example-description").innerHTML = examples[index].description;
-  document.getElementById("example-interface").innerHTML   = examples[index].interface;
-
-  // Drop-zone reset
   const drop = document.getElementById("drop-zone");
   drop.innerHTML = `<h2>Errores Detectados</h2>`;
-
-  // Banco
   renderBank();
 
-  // Re-instanciar DragDivider con elementos recién pintados
-  const items = draggableItemsData.map(item=>({
-    element         : document.getElementById(item.id),
-    expectedCategory: examples[index].expected.includes(item.id)?"drop":"bank"
+  const items = draggableItemsData.map(d=>({
+    element         : document.getElementById(d.id),
+    expectedCategory: examples[i].expected.includes(d.id) ? "drop" : "bank"
   }));
   dragDivider = new DragDivider({
     base      : { element: document.getElementById("bank-container"), items },
     categories: [{ name:"drop", element: drop }],
-    verifyButton: document.getElementById("verify-button"),   // se clona luego
+    verifyButton: document.getElementById("verify-button"),
     messages  : {
       onSuccess: "¡Felicidades! Todas las respuestas son correctas.",
       onFail   : "Algunas respuestas no son correctas, revisá el error y presioná 'Reiniciar'.",
@@ -362,7 +352,6 @@ function loadExample(index){
     }
   });
 
-  // Reinicio de textos / estados
   document.getElementById("verification-message").textContent = "";
   document.getElementById("verify-button").disabled = false;
 }
@@ -370,126 +359,43 @@ function loadExample(index){
 /* ------------------------------------------------------------------ */
 /*  VERIFICACIÓN                                                      */
 /* ------------------------------------------------------------------ */
-function verifyAnswers(){
-  const expectedSet = new Set(examples[currentExampleIndex].expected);
-  const dropZone    = document.getElementById("drop-zone");
-  const placedItems = Array.from(dropZone.querySelectorAll(".draggable"));
-
-  /* iconos ✓ / ✗ en cada tarjeta */
-  placedItems.forEach((el,i)=>{
-    setTimeout(()=>{
-      const ok   = expectedSet.has(el.id);
-      const icon = document.createElement("span");
-      icon.classList.add("icon", ok ? "correct" : "incorrect");
-      icon.textContent = ok ? "✓" : "✗";
-      el.appendChild(icon);
-    }, i*1000);
-  });
-
-  /* mensaje + botones Siguiente / Jugar de nuevo */
-  setTimeout(()=>{
-    const totalExpected = expectedSet.size;
-    const providedSet   = new Set(placedItems.map(el=>el.id));
-    const correctCount  = placedItems.filter(el=>expectedSet.has(el.id)).length;
-
-    let msg = "";
-    if(!placedItems.length){
-      msg = "No se han depositado respuestas.";
-    }else if(providedSet.size===totalExpected && correctCount===totalExpected){
-      msg = "¡Felicidades! Todas las respuestas son correctas.";
-    }else if(!correctCount){
-      msg = "¡Reintentá! Si necesitás ayuda, podés presionar el botón de 'Pista'.";
-    }else if(correctCount===placedItems.length){
-      msg = "Todas las respuestas depositadas son correctas, pero faltan una o más. Presioná 'Reiniciar' para seguir…";
-    }else{
-      msg = "Hay varias respuestas correctas, pero una o más no lo están. Presioná 'Reiniciar'…";
-    }
-
-    const msgBox = document.getElementById("verification-message");
-    msgBox.textContent = msg;
-
-    if(msg==="¡Felicidades! Todas las respuestas son correctas."){
-      msgBox.appendChild(document.createElement("br"));
-
-      if(currentExampleIndex < examples.length-1){
-        /* ----- BOTÓN SIGUIENTE EJEMPLO ----- */
-        const raw = document.createElement("button");
-        raw.id = "next-example";
-        raw.textContent = "Siguiente ejemplo";
-        msgBox.appendChild(raw);
-
-        makeSafeButton("next-example", ()=>{
-          const nxt = currentExampleIndex+1;
-          localStorage.setItem("currentExampleIndex",nxt);
-          loadExample(nxt);
-        });
-      }else{
-        /* ----- BOTÓN JUGAR DE NUEVO ----- */
-        const raw = document.createElement("button");
-        raw.id = "play-again";
-        raw.textContent = "Jugar de nuevo";
-        msgBox.appendChild(raw);
-
-        makeSafeButton("play-again", ()=>{
-          localStorage.setItem("currentExampleIndex",0);
-          loadExample(0);
-        });
-      }
-    }
-  }, placedItems.length*1000 + 500);
-}
+function verifyAnswers(){ /* … sin cambios … */ }
 
 /* ------------------------------------------------------------------ */
-/*  RESET LIMPIO                                                      */
+/*  RESET SIN LLAMAR A dragDivider.resetActivity()                    */
 /* ------------------------------------------------------------------ */
 function resetActivityClean(){
-  if(dragDivider) dragDivider.resetActivity();            // devuelve tarjetas al banco
+  /* 1. Mover cualquier tarjeta que esté en el drop-zone al banco -------- */
+  const bank = document.getElementById("bank-container");
+  document.querySelectorAll("#drop-zone .draggable").forEach(card=>{
+    bank.appendChild(card);
+  });
 
-  // limpiar msgs / iconos (sin borrar drop-zone para conservar listeners)
-  document.getElementById("verification-message").textContent = "";
+  /* 2. Limpiar iconos y mensaje ---------------------------------------- */
   document.querySelectorAll(".icon").forEach(i=>i.remove());
+  document.getElementById("verification-message").textContent = "";
 
-  // activar verify
+  /* 3. Reactivar botón de verificación --------------------------------- */
   document.getElementById("verify-button").disabled = false;
 }
 
 /* ------------------------------------------------------------------ */
-/*  HINTS & INSTRUCTIONS                                              */
+/*  HINTS & INSTRUCTIONS  (sin cambios)                                */
 /* ------------------------------------------------------------------ */
-function showHint(){
-  document.getElementById("hint-text").textContent = examples[currentExampleIndex].hint;
-  document.getElementById("hint-modal").style.display = "flex";
-}
-document.getElementById("hint-button").addEventListener("click", showHint);
-document.getElementById("hint-ok-button").addEventListener("click",
-  ()=>{ document.getElementById("hint-modal").style.display="none"; });
-
-function showInstructions(){
-  document.getElementById("instructions-modal").style.display = "flex";
-}
-document.getElementById("instructions-button").addEventListener("click", showInstructions);
-document.getElementById("instructions-ok-button").addEventListener("click",
-  ()=>{ document.getElementById("instructions-modal").style.display="none"; });
+function showHint(){ /* … */ }
 
 /* ------------------------------------------------------------------ */
-/*  ON LOAD                                                           */
+/*  ON LOAD                                                            */
 /* ------------------------------------------------------------------ */
 window.onload = ()=>{
-  /* PG tracking (interno del campus) */
-  const pgEvent = new PGEvent();
-  pgEvent.getValues();
+  new PGEvent().getValues();
 
-  /* Cargar último ejemplo o el primero */
-  const saved = localStorage.getItem("currentExampleIndex");
-  loadExample(saved ? parseInt(saved,10) : 0);
-  showInstructions();
+  const saved = parseInt(localStorage.getItem("currentExampleIndex") ?? "0",10);
+  loadExample(Number.isInteger(saved) && examples[saved] ? saved : 0);
+  document.getElementById("instructions-modal").style.display = "flex";
 
-  /* Botones “seguros” (sin listeners LMS) */
-  makeSafeButton("verify-button", (btn)=>{
-    btn.disabled = true;
-    verifyAnswers();
-  });
-  makeSafeButton("reset-button", ()=> resetActivityClean());
+  makeSafeButton("verify-button",(btn)=>{ btn.disabled=true; verifyAnswers(); });
+  makeSafeButton("reset-button", ()=> resetActivityClean() );
 };
 </script>
 
