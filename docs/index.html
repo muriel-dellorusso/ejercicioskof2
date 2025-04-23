@@ -180,25 +180,34 @@
     </div>
   </div>
 
-<script type="module">
-/* ------------------------------------------------------------------ */
-/*  IMPORTS                                                           */
-/* ------------------------------------------------------------------ */
+  <script type="module">
 import { DragDivider } from "./drag.js";
-import { PGEvent }      from "./pg-event.js";
+import { PGEvent } from "./pg-event.js";
+/**
+ * Quita los listeners que el LMS inyecta en un <button>
+ * y engancha sólo el handler propio que le pases.
+ */
+ function makeSafeButton(id, handler) {
+  const oldBtn = document.getElementById(id);
+  const newBtn = oldBtn.cloneNode(true);          // copia atributos + texto
+  oldBtn.replaceWith(newBtn);                     // DOM swap
+  newBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();                          // nada burbujea hacia el LMS
+    handler(newBtn, e);
+  });
+  return newBtn;
+}
 
-/* ------------------------------------------------------------------ */
-/*  DATA                                                              */
-/* ------------------------------------------------------------------ */
-const draggableItemsData = [
-  { id: "draggable-forma",      label: "Forma"      },
-  { id: "draggable-posicion",   label: "Posición"   },
-  { id: "draggable-medida",     label: "Medida"     },
-  { id: "draggable-direccion",  label: "Dirección"  },
-  { id: "draggable-color",      label: "Color"      }
-];
+    const draggableItemsData = [
+      { id: "draggable-forma", label: "Forma" },
+      { id: "draggable-posicion", label: "Posición" },
+      { id: "draggable-medida", label: "Medida" },
+      { id: "draggable-direccion", label: "Dirección" },
+      { id: "draggable-color", label: "Color" }
+    ];
 
-const examples = [
+    const examples = [
       {
         description: `Estás intentando cambiar tu nombre de usuario en un videojuego y una vez que terminás de elegirlo, este es el botón que ves abajo para guardar y continuar con la siguiente pantalla. ¿Qué te llama la atención? ¿Podés leer lo que dice? ¿De qué forma suelen ser los botones para guardar o editar datos en una página o en un juego?`,
         interface: `
@@ -292,112 +301,212 @@ const examples = [
         Incluso si pudieras leer lo que dice, pensá que cuando diseñamos tenemos que hacer algo que todos podamos usar cómodamente. ¿Te parece cómodo a la vista tener un botón así, o con otros colores te parece que se leería mejor?`
       }
     ];
-/* ------------------------------------------------------------------ */
-/*  STATE                                                             */
-/* ------------------------------------------------------------------ */
-let currentExampleIndex = 0;
-let dragDivider;
 
-/* ------------------------------------------------------------------ */
-/*  HELPERS                                                           */
-/* ------------------------------------------------------------------ */
-function makeSafeButton(id, handler){
-  const old = document.getElementById(id);
-  if(!old) return null;
-  const btn = old.cloneNode(true);
-  old.replaceWith(btn);
-  btn.addEventListener("click",(e)=>{
-    e.preventDefault(); e.stopPropagation();
-    handler(btn,e);
-  });
-  return btn;
-}
+    let currentExampleIndex = 0; 
+    let dragDivider; 
 
-/* ------------------------------------------------------------------ */
-/*  RENDERIZADO                                                       */
-/* ------------------------------------------------------------------ */
-function renderBank(){
-  const bank = document.getElementById("bank-container");
-  bank.innerHTML = "";
-  draggableItemsData.forEach(item=>{
-    const el = document.createElement("div");
-    el.classList.add("draggable");
-    el.id = item.id;
-    el.textContent = item.label;
-    bank.appendChild(el);
-  });
-}
-
-function loadExample(i){
-  currentExampleIndex = i;
-  document.getElementById("example-description").innerHTML = examples[i].description;
-  document.getElementById("example-interface").innerHTML   = examples[i].interface;
-
-  const drop = document.getElementById("drop-zone");
-  drop.innerHTML = `<h2>Errores Detectados</h2>`;
-  renderBank();
-
-  const items = draggableItemsData.map(d=>({
-    element         : document.getElementById(d.id),
-    expectedCategory: examples[i].expected.includes(d.id) ? "drop" : "bank"
-  }));
-  dragDivider = new DragDivider({
-    base      : { element: document.getElementById("bank-container"), items },
-    categories: [{ name:"drop", element: drop }],
-    verifyButton: document.getElementById("verify-button"),
-    messages  : {
-      onSuccess: "¡Felicidades! Todas las respuestas son correctas.",
-      onFail   : "Algunas respuestas no son correctas, revisá el error y presioná 'Reiniciar'.",
-      onReset  : "Actividad reiniciada."
+    
+    function renderBank() {
+      const bankContainer = document.getElementById("bank-container");
+      bankContainer.innerHTML = "";
+      draggableItemsData.forEach(itemData => {
+        const el = document.createElement("div");
+        el.classList.add("draggable");
+        el.id = itemData.id;
+        el.textContent = itemData.label;
+        bankContainer.appendChild(el);
+      });
     }
-  });
-
-  document.getElementById("verification-message").textContent = "";
-  document.getElementById("verify-button").disabled = false;
-}
-
-/* ------------------------------------------------------------------ */
-/*  VERIFICACIÓN                                                      */
-/* ------------------------------------------------------------------ */
-function verifyAnswers(){ /* … sin cambios … */ }
-
-/* ------------------------------------------------------------------ */
-/*  RESET SIN LLAMAR A dragDivider.resetActivity()                    */
-/* ------------------------------------------------------------------ */
-function resetActivityClean(){
-  /* 1. Mover cualquier tarjeta que esté en el drop-zone al banco -------- */
+    function resetUI() {
+  const drop = document.getElementById("drop-zone");
   const bank = document.getElementById("bank-container");
-  document.querySelectorAll("#drop-zone .draggable").forEach(card=>{
+
+  // 1) Mover cada tarjeta que esté en la caja de nuevo al banco
+  drop.querySelectorAll(".draggable").forEach(card => {
+    card.querySelectorAll(".icon").forEach(i => i.remove()); // borra ✓/✗
     bank.appendChild(card);
   });
 
-  /* 2. Limpiar iconos y mensaje ---------------------------------------- */
-  document.querySelectorAll(".icon").forEach(i=>i.remove());
+  // 2) Limpiar mensaje y reactivar “Guardar y verificar”
   document.getElementById("verification-message").textContent = "";
-
-  /* 3. Reactivar botón de verificación --------------------------------- */
   document.getElementById("verify-button").disabled = false;
 }
 
-/* ------------------------------------------------------------------ */
-/*  HINTS & INSTRUCTIONS  (sin cambios)                                */
-/* ------------------------------------------------------------------ */
-function showHint(){ /* … */ }
+    function loadExample(index) {
+      currentExampleIndex = index;
+      document.getElementById("example-description").innerHTML = examples[index].description;
+      document.getElementById("example-interface").innerHTML = examples[index].interface;
+      const dropZone = document.getElementById("drop-zone");
+      dropZone.innerHTML = <h2>Errores Detectados</h2>;
+      renderBank();
 
-/* ------------------------------------------------------------------ */
-/*  ON LOAD                                                            */
-/* ------------------------------------------------------------------ */
-window.onload = ()=>{
-  new PGEvent().getValues();
+      const bankContainer = document.getElementById("bank-container");
+      const items = draggableItemsData.map(itemData => {
+        return {
+          element: document.getElementById(itemData.id),
+          expectedCategory: examples[index].expected.includes(itemData.id) ? "drop" : "bank"
+        };
+      });
+      dragDivider = new DragDivider({
+        base: {
+          element: bankContainer,
+          items: items
+        },
+        categories: [
+          { name: "drop", element: dropZone }
+        ],
+        verifyButton: document.getElementById("verify-button"),
+        messages: {
+          onSuccess: "¡Felicidades! Todas las respuestas son correctas.",
+          onFail: "Algunas respuestas no son correctas, revisá el error y presioná 'Reiniciar'.",
+          onReset: "Actividad reiniciada."
+        }
+      });
 
-  const saved = parseInt(localStorage.getItem("currentExampleIndex") ?? "0",10);
-  loadExample(Number.isInteger(saved) && examples[saved] ? saved : 0);
-  document.getElementById("instructions-modal").style.display = "flex";
+      document.getElementById("verification-message").innerHTML = "";
+      document.getElementById("verify-button").disabled = false;
+    }
 
-  makeSafeButton("verify-button",(btn)=>{ btn.disabled=true; verifyAnswers(); });
-  makeSafeButton("reset-button", ()=> resetActivityClean() );
+    function verifyAnswers() {
+      const expectedSet = new Set(examples[currentExampleIndex].expected);
+      const dropZone = document.getElementById("drop-zone");
+      const placedItems = Array.from(dropZone.querySelectorAll(".draggable"));
+
+      placedItems.forEach((el, index) => {
+        setTimeout(() => {
+          let isCorrect = expectedSet.has(el.id);
+          const icon = document.createElement("span");
+          icon.classList.add("icon");
+          if (isCorrect) {
+            icon.classList.add("correct");
+            icon.textContent = "✓";
+          } else {
+            icon.classList.add("incorrect");
+            icon.textContent = "✗";
+          }
+          el.appendChild(icon);
+        }, index * 1000);
+      });
+
+      setTimeout(() => {
+        const providedSet = new Set(placedItems.map(el => el.id));
+        const totalExpected = expectedSet.size;
+        const totalProvided = providedSet.size;
+        let correctCount = 0;
+        placedItems.forEach(el => {
+          if (expectedSet.has(el.id)) correctCount++;
+        });
+        let message = "";
+        if (totalProvided === 0) {
+          message = "No se han depositado respuestas.";
+        } else if (totalProvided === totalExpected && correctCount === totalExpected) {
+          message = "¡Felicidades! Todas las respuestas son correctas.";
+        } else if (correctCount === 0) {
+          message = "¡Reintentá! Si necesitás ayuda, podés presionar el botón de 'Pista'.";
+        } else if (correctCount === totalProvided && totalProvided < totalExpected) {
+          message = "Todas las respuestas depositadas son correctas, pero faltan una o más. Presioná 'Reiniciar' para seguir o, si necesitás ayuda, podés presionar el botón de 'Pista'.";
+        } else {
+          message = "Hay varias respuestas correctas, pero una o más no lo están. Presioná 'Reiniciar' para seguir o, si necesitás ayuda, podés presionar el botón de 'Pista'.";
+        }
+
+        const messageContainer = document.getElementById("verification-message");
+        messageContainer.textContent = message;
+        if (message === "¡Felicidades! Todas las respuestas son correctas.") {
+          if (currentExampleIndex < examples.length - 1) {
+            const nextBtn = document.createElement("button");
+            nextBtn.id = "next-example";
+            nextBtn.textContent = "Siguiente ejemplo";
+            nextBtn.addEventListener("click", () => {
+            const nextIndex = currentExampleIndex + 1;
+            localStorage.setItem("currentExampleIndex", nextIndex);
+            loadExample(nextIndex);
+            });
+
+            messageContainer.appendChild(document.createElement("br"));
+            messageContainer.appendChild(nextBtn);
+          } else {
+            const playAgainBtn = document.createElement("button");
+            playAgainBtn.id = "play-again";
+            playAgainBtn.textContent = "Jugar de nuevo";
+            playAgainBtn.addEventListener("click", () => {
+            localStorage.setItem("currentExampleIndex", 0);
+            loadExample(0);
+          });
+
+            messageContainer.appendChild(document.createElement("br"));
+            messageContainer.appendChild(playAgainBtn);
+          }
+        }
+      }, placedItems.length * 1000 + 500);
+    }
+
+    document.getElementById("verify-button").addEventListener("click", () => {
+      document.getElementById("verify-button").disabled = true;
+      verifyAnswers();
+    });
+
+    document.getElementById("reset-button").addEventListener("click", () => {
+  if (dragDivider) dragDivider.resetActivity();
+  const dropZone = document.getElementById("drop-zone");
+  dropZone.innerHTML = <h2>Errores Detectados</h2>;
+  document.getElementById("verification-message").innerHTML = "";
+  document.querySelectorAll(".draggable .icon").forEach(icon => icon.remove());
+  document.getElementById("verify-button").disabled = false;
+
+  // (Opcional) borrar progreso guardado:
+  // localStorage.removeItem("currentExampleIndex");
+});
+
+
+    function showHint() {
+      const hintText = examples[currentExampleIndex].hint;
+      document.getElementById("hint-text").textContent = hintText;
+      document.getElementById("hint-modal").style.display = "flex";
+    }
+    document.getElementById("hint-button").addEventListener("click", () => {
+      showHint();
+    });
+    document.getElementById("hint-ok-button").addEventListener("click", () => {
+      document.getElementById("hint-modal").style.display = "none";
+    });
+
+    function showInstructions() {
+      document.getElementById("instructions-modal").style.display = "flex";
+    }
+    document.getElementById("instructions-button").addEventListener("click", () => {
+      showInstructions();
+    });
+    document.getElementById("instructions-ok-button").addEventListener("click", () => {
+      document.getElementById("instructions-modal").style.display = "none";
+    });
+window.onload = () => {
+  const pgEvent = new PGEvent();
+  pgEvent.getValues();
+
+  // Cargamos el ejemplo guardado
+  const savedIndex = localStorage.getItem("currentExampleIndex");
+  const indexToLoad = savedIndex ? parseInt(savedIndex, 10) : 0;
+  loadExample(indexToLoad);
+  showInstructions();
+
+  // ——— Aquí viene la “magia”: clonar y reenganchar solo nuestra lógica ———
+  const oldBtn = document.getElementById("verify-button");
+  const newBtn = oldBtn.cloneNode(true);
+  oldBtn.parentNode.replaceChild(newBtn, oldBtn);
+
+  // Ahora attach solo NUESTRO listener
+  newBtn.addEventListener("click", (e) => {
+    e.preventDefault();             // prevenimos cualquier submit o handler externo
+    newBtn.disabled = true;         // igual que antes
+    verifyAnswers();                // nuestra función de validación
+  });
+
+  makeSafeButton("reset-button", () => resetUI());
 };
-</script>
+
+
+
+  </script>
 
   
   <div id="instructions-modal" class="modal">
