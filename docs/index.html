@@ -426,22 +426,19 @@ import { PGEvent } from "./pg-event.js";
             messageContainer.appendChild(nextBtn);
           } /* ——— Último ejemplo: botón “Jugar de nuevo” ——— */
 } else {
-  // 1. crea el botón “en bruto” y añádelo al DOM
-  const raw = document.createElement("button");
-  raw.id = "play-again";
-  raw.textContent = "Jugar de nuevo";
+  const playAgainRaw = document.createElement("button");
+  playAgainRaw.id = "play-again";
+  playAgainRaw.textContent = "Jugar de nuevo";
+
   messageContainer.appendChild(document.createElement("br"));
-  messageContainer.appendChild(raw);
+  messageContainer.appendChild(playAgainRaw);
 
-    // 2) pasarlo por makeSafeButton para frenar el listener del LMS
-    makeSafeButton("play-again", () => {
-      localStorage.setItem("currentExampleIndex", 0);
-      loadExample(0);
-    });
-
-  }, placedItems.length * 1000 + 500);   //  ← el delay va aquí
+  // Limpiamos los listeners del LMS y ponemos sólo el nuestro
+  makeSafeButton("play-again", () => {
+    localStorage.setItem("currentExampleIndex", 0);
+    loadExample(0);
+  });
 }
-
 
     document.getElementById("reset-button").addEventListener("click", () => {
   if (dragDivider) dragDivider.resetActivity();
