@@ -180,26 +180,26 @@
     </div>
   </div>
 
- <script type="module">
+<script type="module">
   import { DragDivider } from "./drag.js";
   import { PGEvent     } from "./pg-event.js";
 
-  // ── 0) Desactivar por completo cualquier envío interno de PGEvent ──
-  // Sobrescribimos postEvent para que ya no haga llamadas GraphQL
+  // ── 0) Anular cualquier envío interno de PGEvent ──
   PGEvent.prototype.postEvent = function(type, message, state) {
-    console.log("[PGEvent.stubbbed] type:", type, "message:", message, "state:", state);
-    // no hace nada más
+    console.log(`[PGEvent stub]`, { type, message, state });
+    // No hace fetch ni dispara GraphQL
   };
 
-  // ── 1) Acumulador de estados para enviar al final ──
+  // ── 1) Acumulador de estados ──
   const allStates = [];
 
-  // ── 2) STUB para el envío de progreso: solo loguea en consola ──
+  // ── 2) STUB de envío final, sin fetch ──
   function sendProgressToLMS(exerciseStatus, lastSending) {
-    console.log("✅ Simulando envío final de progreso:", exerciseStatus, lastSending);
+    console.log("✅ Simulando envío final de progreso:", { exerciseStatus, lastSending });
+    // No contiene ninguna llamada a fetch ni GraphQL
   }
 
-  // ── 3) Función utilitaria que clona un botón y elimina listeners externos ──
+  // ── 3) makeSafeButton: clona y limpia listeners externos ──
   function makeSafeButton(id, handler) {
     const oldBtn = document.getElementById(id);
     const newBtn = oldBtn.cloneNode(true);
@@ -222,7 +222,6 @@
     { id: "draggable-direccion", label: "Dirección" },
     { id: "draggable-color",     label: "Color"     }
   ];
-
   // 4) Ejemplos
   const examples = [
     {
@@ -295,7 +294,7 @@
    let currentExampleIndex = 0;
   let dragDivider;
 
-  // ── 6) Renderiza el banco de ítems ──
+  // ── 6) Renderiza el banco ──
   function renderBank() {
     const bank = document.getElementById("bank-container");
     bank.innerHTML = "";
@@ -308,7 +307,7 @@
     });
   }
 
-  // ── 7) Resetea solo la UI (sin tocar allStates) ──
+  // ── 7) Resetea la UI ──
   function resetUI() {
     const drop = document.getElementById("drop-zone");
     const bank = document.getElementById("bank-container");
@@ -319,7 +318,7 @@
     document.getElementById("verification-message").textContent = "";
   }
 
-  // ── 8) Carga un ejemplo y prepara DragDivider ──
+  // ── 8) Carga un ejemplo ──
   function loadExample(i) {
     currentExampleIndex = i;
     document.getElementById("example-description").innerHTML = examples[i].description;
@@ -338,13 +337,13 @@
       verifyButton: document.getElementById("verify-button"),
       messages: {
         onSuccess: "¡Felicidades! Todas las respuestas son correctas.",
-        onFail:    "Algunas respuestas no son correctas, revisá el error.",
+        onFail:    "Algunas respuestas no son correctas.",
         onReset:   "Actividad reiniciada."
       }
     });
   }
 
-  // ── 9) Verifica respuestas, acumula estado y simula envío final ──
+  // ── 9) Verificación ──
   function verifyAnswers() {
     const drop     = document.getElementById("drop-zone");
     const placed   = Array.from(drop.querySelectorAll(".draggable"));
@@ -353,13 +352,10 @@
     // 9.1) Acumular estado
     allStates.push({
       base: [],
-      categories: [{
-        name: "drop",
-        items: placed.map(el => el.id)
-      }]
+      categories: [{ name: "drop", items: placed.map(el => el.id) }]
     });
 
-    // 9.2) Mostrar iconos
+    // 9.2) Íconos
     placed.forEach((el, idx) => {
       setTimeout(() => {
         const ok = expected.has(el.id);
@@ -377,21 +373,21 @@
       const correct  = placed.filter(el => expected.has(el.id)).length;
       let msg = "";
 
-      if (!placed.length)                                          msg = "No se han depositado respuestas.";
+      if (!placed.length)                                           msg = "No se han depositado respuestas.";
       else if (provided.size === expected.size && correct === expected.size)
-                                                                   msg = "¡Felicidades! Todas las respuestas son correctas.";
-      else if (!correct)                                          msg = "¡Reintentá! Si necesitás ayuda, presioná 'Pista'.";
-      else if (correct === placed.length)                          msg = "Todas las respuestas depositadas son correctas, pero faltan una o más.";
-      else                                                         msg = "Hay varias respuestas correctas, pero una o más no lo están.";
+                                                                    msg = "¡Felicidades! Todas las respuestas son correctas.";
+      else if (!correct)                                           msg = "¡Reintentá! Presioná 'Pista'.";
+      else if (correct === placed.length)                           msg = "Correctas, pero faltan una o más.";
+      else                                                          msg = "Algunas están correctas y algunas no.";
 
       msgBox.textContent = msg;
 
-      // 9.4) Si es el último y todo ok, simulamos envío
+      // 9.4) Al final, simular envío
       if (msg.startsWith("¡Felicidades!") && currentExampleIndex === examples.length - 1) {
         sendProgressToLMS("SUCCESS", allStates);
       }
 
-      // 9.5) Navegación siguiente/jugar-de-nuevo
+      // 9.5) Navegación
       if (msg.startsWith("¡Felicidades!")) {
         msgBox.appendChild(document.createElement("br"));
         if (currentExampleIndex < examples.length - 1) {
@@ -412,16 +408,18 @@
     }, placed.length * 500 + 300);
   }
 
-  // ── 10) Al cargar la página ──
-  window.onload = () => {
-    // 10.1) Inicializamos PGEvent sin que haga fetch
-    new PGEvent().getValues();
+  // ── 10) Pista ──
+  function showHint() {
+    document.getElementById("hint-text").textContent = examples[currentExampleIndex].hint;
+    document.getElementById("hint-modal").style.display = "flex";
+  }
 
-    // 10.2) Carga el progreso guardado
+  // ── 11) Al cargar la página ──
+  window.onload = () => {
+    new PGEvent().getValues();
     const saved = parseInt(localStorage.getItem("currentExampleIndex") || "0", 10);
     loadExample((saved >= 0 && saved < examples.length) ? saved : 0);
 
-    // 10.3) Botones “Guardar y verificar” / “Reiniciar” seguros
     makeSafeButton("verify-button", () => verifyAnswers());
     makeSafeButton("reset-button", () => {
       localStorage.setItem("currentExampleIndex", 0);
@@ -429,10 +427,7 @@
       loadExample(0);
     });
 
-    // 10.4) Modales
-    document.getElementById("hint-button").addEventListener("click", () => {
-      document.getElementById("hint-modal").style.display = "flex";
-    });
+    document.getElementById("hint-button").addEventListener("click", showHint);
     document.getElementById("hint-ok-button").addEventListener("click", () => {
       document.getElementById("hint-modal").style.display = "none";
     });
@@ -442,8 +437,6 @@
     document.getElementById("instructions-ok-button").addEventListener("click", () => {
       document.getElementById("instructions-modal").style.display = "none";
     });
-
-    // Mostrar instrucciones al inicio
     document.getElementById("instructions-modal").style.display = "flex";
   };
 </script>
