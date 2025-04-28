@@ -187,6 +187,83 @@
 import { DragDivider } from "./drag.js";
 import { PGEvent     } from "./pg-event.js";
 
+// --- 0) debajo de tus imports, crea un array para acumular estados ---
+const allStates = [];
+
+// --- 1) Función genérica para enviar la mutación ---
+function sendProgressToLMS(exerciseStatus, lastSending) {
+  const payload = {
+    operationName: "AddBlockProgress",
+    query: `
+      mutation AddBlockProgress(
+        $courseId: String!,
+        $topicId: String!,
+        $blocks: [ProgressBlockInput!]!
+      ) {
+        addBlockProgress(
+          course_id: $courseId,
+          topic_id: $topicId,
+          blocks: $blocks
+        ) {
+          blockType
+          completed
+        }
+      }
+    `,
+    variables: {
+      courseId:   "1ffb7b19-e853-4c39-a38a-de1b00c84280",     // reemplazá con tu ID real
+      topicId:    "9a954bf7-2d1d-4c89-a10a-2920a07e479e",     // reemplazá con tu ID real
+      blocks: [{
+        block_id: "4698a76a-ad1d-47b3-922a-491749246ae0",     // ID de este ejercicio
+        block_type: "exercise",
+        exercise_iframe_payload: {
+          exercise_status: exerciseStatus,                   // "SUCCESS" o "FAILURE"
+          last_sending: JSON.stringify(lastSending)         // acá enviás todo allStates
+        }
+      }]
+    }
+  };
+
+  return fetch("/graphql", {                               // o la URL que use tu LMS
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  })
+  .then(r => r.json())
+  .then(console.log)
+  .catch(console.error);
+}
+
+// --- 2) En tu verifyAnswers, cuando obtengas el estado de esta pantalla … ---
+function verifyAnswers() {
+  // … tu lógica normal para dibujar iconos y calcular mensaje
+  const stateForThis = {
+    base: [],      // aquí armás lo mismo que en tu state JSON
+    categories: [
+      {
+        name: "drop",
+        items: Array.from(
+          document.getElementById("drop-zone")
+                  .querySelectorAll(".draggable")
+        ).map(el => el.id)
+      }
+    ]
+  };
+
+  // Acumula el estado
+  allStates.push(stateForThis);
+
+  // … luego, si es el último ejemplo y todas correctas …
+  if (mensaje === "¡Felicidades! Todas las respuestas son correctas."
+      && currentExampleIndex === examples.length - 1) {
+    // enviamos UNA sola vez TODO el progreso:
+    sendProgressToLMS("SUCCESS", allStates);
+  }
+
+  // … resto de tu código para siguiente/play again …
+}
+
+
 /* ------------------------------------------------------------------ */
 /*  HELPER anti-LMS                                                   */
 /* ------------------------------------------------------------------ */
