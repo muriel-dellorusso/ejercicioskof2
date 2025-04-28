@@ -180,80 +180,41 @@
     </div>
   </div>
 
-  <script type="module">
+ <script type="module">
   import { DragDivider } from "./drag.js";
   import { PGEvent     } from "./pg-event.js";
 
-  // 0) Acumulador de estados para enviar al final
+  // ── 0) Desactivar por completo cualquier envío interno de PGEvent ──
+  // Sobrescribimos postEvent para que ya no haga llamadas GraphQL
+  PGEvent.prototype.postEvent = function(type, message, state) {
+    console.log("[PGEvent.stubbbed] type:", type, "message:", message, "state:", state);
+    // no hace nada más
+  };
+
+  // ── 1) Acumulador de estados para enviar al final ──
   const allStates = [];
 
-  // 1) Envío único de progreso al terminar el último ejercicio
+  // ── 2) STUB para el envío de progreso: solo loguea en consola ──
   function sendProgressToLMS(exerciseStatus, lastSending) {
-    const payload = {
-      operationName: "AddBlockProgress",
-      query: `
-        mutation AddBlockProgress(
-          $courseId: String!,
-          $topicId: String!,
-          $blocks: [ProgressBlockInput!]!
-        ) {
-          addBlockProgress(
-            course_id: $courseId,
-            topic_id: $topicId,
-            blocks: $blocks
-          ) {
-            blockType
-            completed
-          }
-        }
-      `,
-      variables: {
-        courseId: "1ffb7b19-e853-4c39-a38a-de1b00c84280",
-        topicId:  "9a954bf7-2d1d-4c89-a10a-2920a07e479e",
-        blocks: [{
-          block_id: "4698a76a-ad1d-47b3-922a-491749246ae0",
-          block_type: "exercise",
-          exercise_iframe_payload: {
-            exercise_status: exerciseStatus,
-            last_sending:    JSON.stringify(lastSending)
-          }
-        }]
-      }
-    };
-
-    const url = `${window.location.origin}/api/graphql`; // ajustá a la ruta real de tu LMS
-    fetch(url, {
-      method:      "POST",
-      credentials: "include",
-      headers:     { "Content-Type": "application/json" },
-      body:        JSON.stringify(payload),
-    })
-    .then(res => {
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.json();
-    })
-    .then(data => console.log("Progreso guardado:", data))
-    .catch(err => console.warn("No se pudo guardar progreso:", err));
+    console.log("✅ Simulando envío final de progreso:", exerciseStatus, lastSending);
   }
 
-  // 2) makeSafeButton: clona el botón y elimina listeners externos
+  // ── 3) Función utilitaria que clona un botón y elimina listeners externos ──
   function makeSafeButton(id, handler) {
     const oldBtn = document.getElementById(id);
     const newBtn = oldBtn.cloneNode(true);
     oldBtn.replaceWith(newBtn);
-
     const guard = e => {
       e.preventDefault();
       e.stopImmediatePropagation();
       handler(newBtn, e);
     };
-
     newBtn.addEventListener("click", guard, true);
     newBtn.addEventListener("click", guard, false);
     return newBtn;
   }
 
-  // 3) Datos de ítems arrastrables
+  // ── 4) Datos de ítems arrastrables ──
   const draggableItemsData = [
     { id: "draggable-forma",     label: "Forma"     },
     { id: "draggable-posicion",  label: "Posición"  },
@@ -331,23 +292,23 @@
     }
   ];
 
-  let currentExampleIndex = 0;
+   let currentExampleIndex = 0;
   let dragDivider;
 
-  // 5) Pinta el banco de ítems
+  // ── 6) Renderiza el banco de ítems ──
   function renderBank() {
     const bank = document.getElementById("bank-container");
     bank.innerHTML = "";
-    draggableItemsData.forEach(d => {
+    draggableItemsData.forEach(item => {
       const el = document.createElement("div");
       el.className = "draggable";
-      el.id = d.id;
-      el.textContent = d.label;
+      el.id = item.id;
+      el.textContent = item.label;
       bank.appendChild(el);
     });
   }
 
-  // 6) Resetea solo la UI sin borrar allStates
+  // ── 7) Resetea solo la UI (sin tocar allStates) ──
   function resetUI() {
     const drop = document.getElementById("drop-zone");
     const bank = document.getElementById("bank-container");
@@ -358,12 +319,12 @@
     document.getElementById("verification-message").textContent = "";
   }
 
-  // 7) Carga y prepara un ejemplo
+  // ── 8) Carga un ejemplo y prepara DragDivider ──
   function loadExample(i) {
     currentExampleIndex = i;
     document.getElementById("example-description").innerHTML = examples[i].description;
     document.getElementById("example-interface").innerHTML   = examples[i].interface;
-    document.getElementById("drop-zone").innerHTML = `<h2>Errores Detectados</h2>`;
+    document.getElementById("drop-zone").innerHTML           = `<h2>Errores Detectados</h2>`;
     renderBank();
     dragDivider = new DragDivider({
       base: {
@@ -383,13 +344,13 @@
     });
   }
 
-  // 8) Verifica respuestas, acumula estado y envía al final
+  // ── 9) Verifica respuestas, acumula estado y simula envío final ──
   function verifyAnswers() {
     const drop     = document.getElementById("drop-zone");
     const placed   = Array.from(drop.querySelectorAll(".draggable"));
     const expected = new Set(examples[currentExampleIndex].expected);
 
-    // 8.1) Acumular estado de esta pantalla
+    // 9.1) Acumular estado
     allStates.push({
       base: [],
       categories: [{
@@ -398,82 +359,69 @@
       }]
     });
 
-    // 8.2) Mostrar íconos
-    placed.forEach((el,i) => {
+    // 9.2) Mostrar iconos
+    placed.forEach((el, idx) => {
       setTimeout(() => {
         const ok = expected.has(el.id);
         const ic = document.createElement("span");
-        ic.className = ok ? "icon correct" : "icon incorrect";
+        ic.className   = ok ? "icon correct" : "icon incorrect";
         ic.textContent = ok ? "✓" : "✗";
         el.appendChild(ic);
-      }, i*500);
+      }, idx * 500);
     });
 
-    // 8.3) Calcular y mostrar mensaje
+    // 9.3) Mensaje y navegación
     setTimeout(() => {
       const msgBox   = document.getElementById("verification-message");
-      const provided = new Set(placed.map(el=>el.id));
-      const correct  = placed.filter(el=>expected.has(el.id)).length;
+      const provided = new Set(placed.map(el => el.id));
+      const correct  = placed.filter(el => expected.has(el.id)).length;
       let msg = "";
 
-      if (!placed.length)                                           msg = "No se han depositado respuestas.";
-      else if (provided.size===expected.size && correct===expected.size)
-                                                                    msg = "¡Felicidades! Todas las respuestas son correctas.";
-      else if (!correct)                                           msg = "¡Reintentá! Si necesitás ayuda, presioná 'Pista'.";
-      else if (correct===placed.length)                            msg = "Todas las respuestas depositadas son correctas, pero faltan una o más.";
-      else                                                          msg = "Hay varias respuestas correctas, pero una o más no lo están.";
+      if (!placed.length)                                          msg = "No se han depositado respuestas.";
+      else if (provided.size === expected.size && correct === expected.size)
+                                                                   msg = "¡Felicidades! Todas las respuestas son correctas.";
+      else if (!correct)                                          msg = "¡Reintentá! Si necesitás ayuda, presioná 'Pista'.";
+      else if (correct === placed.length)                          msg = "Todas las respuestas depositadas son correctas, pero faltan una o más.";
+      else                                                         msg = "Hay varias respuestas correctas, pero una o más no lo están.";
 
       msgBox.textContent = msg;
 
-      // 8.4) Si es el último y TODO correcto, enviamos una sola mutación
-      if (msg.startsWith("¡Felicidades!") && currentExampleIndex===examples.length-1) {
+      // 9.4) Si es el último y todo ok, simulamos envío
+      if (msg.startsWith("¡Felicidades!") && currentExampleIndex === examples.length - 1) {
         sendProgressToLMS("SUCCESS", allStates);
       }
 
-      // 8.5) Navegación siguiente/jugar de nuevo
+      // 9.5) Navegación siguiente/jugar-de-nuevo
       if (msg.startsWith("¡Felicidades!")) {
         msgBox.appendChild(document.createElement("br"));
         if (currentExampleIndex < examples.length - 1) {
-          const nxt = document.createElement("button");
-          nxt.id = "next-example";
-          nxt.textContent = "Siguiente ejemplo";
-          msgBox.appendChild(nxt);
-          makeSafeButton("next-example", () => {
+          makeSafeButton("verify-button", () => {
             const ni = currentExampleIndex + 1;
             localStorage.setItem("currentExampleIndex", ni);
             resetUI();
             loadExample(ni);
           });
         } else {
-          const play = document.createElement("button");
-          play.id = "play-again";
-          play.textContent = "Jugar de nuevo";
-          msgBox.appendChild(play);
-          makeSafeButton("play-again", () => {
+          makeSafeButton("verify-button", () => {
             localStorage.setItem("currentExampleIndex", 0);
             resetUI();
             loadExample(0);
           });
         }
       }
-    }, placed.length*500 + 300);
+    }, placed.length * 500 + 300);
   }
 
-  // 9) Modal de pista
-  function showHint() {
-    document.getElementById("hint-text").textContent = examples[currentExampleIndex].hint;
-    document.getElementById("hint-modal").style.display = "flex";
-  }
-
-  // 10) Al cargar la página
+  // ── 10) Al cargar la página ──
   window.onload = () => {
+    // 10.1) Inicializamos PGEvent sin que haga fetch
     new PGEvent().getValues();
 
-    // 10.1) Cargar progreso
+    // 10.2) Carga el progreso guardado
     const saved = parseInt(localStorage.getItem("currentExampleIndex") || "0", 10);
     loadExample((saved >= 0 && saved < examples.length) ? saved : 0);
 
-    // 10.2) Botones seguros
+    // 10.3) Botones “Guardar y verificar” / “Reiniciar” seguros
     makeSafeButton("verify-button", () => verifyAnswers());
     makeSafeButton("reset-button", () => {
       localStorage.setItem("currentExampleIndex", 0);
@@ -481,8 +429,10 @@
       loadExample(0);
     });
 
-    // 10.3) Modales
-    document.getElementById("hint-button").addEventListener("click", showHint);
+    // 10.4) Modales
+    document.getElementById("hint-button").addEventListener("click", () => {
+      document.getElementById("hint-modal").style.display = "flex";
+    });
     document.getElementById("hint-ok-button").addEventListener("click", () => {
       document.getElementById("hint-modal").style.display = "none";
     });
