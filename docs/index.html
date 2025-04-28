@@ -181,283 +181,321 @@
   </div>
 
   <script type="module">
-    import { DragDivider } from "./drag.js";
-    import { PGEvent     } from "./pg-event.js";
+  import { DragDivider } from "./drag.js";
+  import { PGEvent     } from "./pg-event.js";
 
-    // 0) Acumulador de estados para enviar al final
-    const allStates = [];
+  // 0) Acumulador de estados para enviar al final
+  const allStates = [];
 
-    // 1) Mutación única al terminar todos los ejercicios
-    function sendProgressToLMS(exerciseStatus, lastSending) {
-      const payload = {
-        operationName: "AddBlockProgress",
-        query: `
-          mutation AddBlockProgress($courseId: String!, $topicId: String!, $blocks: [ProgressBlockInput!]!) {
-            addBlockProgress(course_id:$courseId, topic_id:$topicId, blocks:$blocks) {
-              blockType
-              completed
-            }
+  // 1) Envío único de progreso al terminar el último ejercicio
+  function sendProgressToLMS(exerciseStatus, lastSending) {
+    const payload = {
+      operationName: "AddBlockProgress",
+      query: `
+        mutation AddBlockProgress(
+          $courseId: String!,
+          $topicId: String!,
+          $blocks: [ProgressBlockInput!]!
+        ) {
+          addBlockProgress(
+            course_id: $courseId,
+            topic_id: $topicId,
+            blocks: $blocks
+          ) {
+            blockType
+            completed
           }
-        `,
-        variables: {
-          courseId: "1ffb7b19-e853-4c39-a38a-de1b00c84280",
-          topicId:  "9a954bf7-2d1d-4c89-a10a-2920a07e479e",
-          blocks: [{
-            block_id: "4698a76a-ad1d-47b3-922a-491749246ae0",
-            block_type: "exercise",
-            exercise_iframe_payload: {
-              exercise_status: exerciseStatus,      // "SUCCESS" o "FAILURE"
-              last_sending: JSON.stringify(lastSending)
-            }
-          }]
         }
-      };
-      return fetch("/graphql", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify(payload)
-      })
-      .then(res => res.json())
-      .then(console.log)
-      .catch(console.error);
-    }
-
-    // 2) Anti-LMS: clona botón y elimina listeners externos
-    function makeSafeButton(id, handler) {
-      const oldBtn = document.getElementById(id);
-      const newBtn = oldBtn.cloneNode(true);
-      oldBtn.replaceWith(newBtn);
-      const guard = e => {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        handler(newBtn, e);
-      };
-      newBtn.addEventListener("click", guard, true);
-      newBtn.addEventListener("click", guard, false);
-      return newBtn;
-    }
-
-    // 3) Datos y ejemplos (igual que antes)
-    const draggableItemsData = [
-      { id: "draggable-forma",     label: "Forma" },
-      { id: "draggable-posicion",  label: "Posición" },
-      { id: "draggable-medida",    label: "Medida" },
-      { id: "draggable-direccion", label: "Dirección" },
-      { id: "draggable-color",     label: "Color" }
-    ];
-
-const examples = [
-  /* ----- ejemplo 1 ----- */
-  {
-    description: `Estás intentando cambiar tu nombre de usuario en un videojuego…`,
-    interface: `
-      <div style="padding: 20px;">
-        <button style="
-          clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-          width: 140px; height: 40px; font-size: 30px;
-          background:#ddd; color:#000 !important; border:none; border-radius:5px;
-        ">guardar</button>
-      </div>
-    `,
-    expected: ["draggable-forma", "draggable-medida"],
-    hint: `Pensá cuando vas a una página web…`
-  },
-  /* ----- ejemplo 2 ----- */
-  {
-    description: `Querés registrarte en un juego en línea…`,
-    interface: `
-      <div style="padding:0">
-        <div style="display:inline-block;position:relative;width:430px;height:214px;background:black;clip-path:polygon(55% 0%,100% 50%,50% 100%,0% 50%);transform:rotate(23deg);">
-          <input placeholder="Escribe tu nombre" type="text" style="
-            clip-path:inherit;border:2px solid #ccc;padding:5px;position:absolute;
-            top:2px;left:2px;width:426px;height:210px;">
-        </div>
-      </div>
-    `,
-    expected: ["draggable-medida","draggable-direccion","draggable-forma"],
-    hint: `Pensá en cuando te estás registrando…`
-  },
-  /* ----- ejemplo 3 ----- */
-  {
-    description: `Estás tratando de leer un artículo en Wikipedia…`,
-    interface: `
-      <div style="padding:20px;">
-        <p style="width:300px;font-size:8px;transform:rotate(-5deg);line-height:1.2;margin:0 auto;">
-          ¡Estamos viendo los principios del diseño con Digital House Schools!…
-        </p>
-      </div>
-    `,
-    expected: ["draggable-direccion","draggable-medida"],
-    hint: `Si tuvieras que leer un libro entero…`
-  },
-  /* ----- ejemplo 4 ----- */
-  {
-    description: `Estás tratando de leer un libro en Internet…`,
-    interface: `
-      <div style="padding:20px;">
-        <div style="position:relative;width:200px;height:50px;margin:0 auto;">
-          <button style="padding:10px !important;margin:5px;">Siguiente</button>
-          <button style="padding:10px !important;margin:5px;">Atrás</button>
-        </div>
-      </div>
-    `,
-    expected: ["draggable-posicion"],
-    hint: `Si tenés que seguir hacia adelante en una página…`
-  },
-  /* ----- ejemplo 5 ----- */
-  {
-    description: `Querés arrancar a jugar un juego y el único botón…`,
-    interface: `
-      <div style="padding:20px;">
-        <button style="background:#fffca9;color:white;padding:10px 20px;border:none;border-radius:5px;font-size:16px;">Ejecutar</button>
-      </div>
-    `,
-    expected: ["draggable-color"],
-    hint: `Si tenés que apretar este botón…`
-  }
-];
-
-/* ------------------------------------------------------------------ */
-/*  STATE & HELPERS                                                   */
-/* ------------------------------------------------------------------ */
-let currentExampleIndex = 0;
-    let dragDivider;
-
-    function renderBank() {
-      const bank = document.getElementById("bank-container");
-      bank.innerHTML = "";
-      draggableItemsData.forEach(d => {
-        const el = document.createElement("div");
-        el.className = "draggable";
-        el.id = d.id;
-        el.textContent = d.label;
-        bank.appendChild(el);
-      });
-    }
-
-    function resetUI() {
-      const drop = document.getElementById("drop-zone");
-      const bank = document.getElementById("bank-container");
-      drop.querySelectorAll(".draggable").forEach(card => {
-        card.querySelectorAll(".icon").forEach(i=>i.remove());
-        bank.appendChild(card);
-      });
-      document.getElementById("verification-message").textContent = "";
-      document.getElementById("verify-button").disabled = false;
-    }
-
-    function loadExample(i) {
-      currentExampleIndex = i;
-      document.getElementById("example-description").innerHTML = examples[i].description;
-      document.getElementById("example-interface").innerHTML   = examples[i].interface;
-      document.getElementById("drop-zone").innerHTML = `<h2>Errores Detectados</h2>`;
-      renderBank();
-      dragDivider = new DragDivider({
-        base: { element: document.getElementById("bank-container"),
-                items: draggableItemsData.map(d=>({
-                         element: document.getElementById(d.id),
-                         expectedCategory: examples[i].expected.includes(d.id)?"drop":"bank"
-                       }))
-              },
-        categories: [{ name:"drop", element: document.getElementById("drop-zone") }],
-        verifyButton: document.getElementById("verify-button"),
-        messages: {
-          onSuccess: "¡Felicidades! Todas las respuestas son correctas.",
-          onFail:    "Algunas respuestas no son correctas, revisá el error y presioná 'Reiniciar'.",
-          onReset:   "Actividad reiniciada."
-        }
-      });
-    }
-
-    function verifyAnswers() {
-      // 1) Acumular estado de esta pantalla
-      const stateForThis = {
-        base: [],
-        categories: [{
-          name:"drop",
-          items: Array.from(
-            document.getElementById("drop-zone").querySelectorAll(".draggable")
-          ).map(el=>el.id)
+      `,
+      variables: {
+        courseId: "1ffb7b19-e853-4c39-a38a-de1b00c84280",
+        topicId:  "9a954bf7-2d1d-4c89-a10a-2920a07e479e",
+        blocks: [{
+          block_id: "4698a76a-ad1d-47b3-922a-491749246ae0",
+          block_type: "exercise",
+          exercise_iframe_payload: {
+            exercise_status: exerciseStatus,
+            last_sending:    JSON.stringify(lastSending)
+          }
         }]
-      };
-      allStates.push(stateForThis);
+      }
+    };
 
-      // 2) Mostrar iconos y mensaje
-      const expected = new Set(examples[currentExampleIndex].expected);
-      const placed   = Array.from(document.getElementById("drop-zone").querySelectorAll(".draggable"));
-      placed.forEach((el,i)=>setTimeout(()=>{
+    const url = `${window.location.origin}/api/graphql`; // ajustá a la ruta real de tu LMS
+    fetch(url, {
+      method:      "POST",
+      credentials: "include",
+      headers:     { "Content-Type": "application/json" },
+      body:        JSON.stringify(payload),
+    })
+    .then(res => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    })
+    .then(data => console.log("Progreso guardado:", data))
+    .catch(err => console.warn("No se pudo guardar progreso:", err));
+  }
+
+  // 2) makeSafeButton: clona el botón y elimina listeners externos
+  function makeSafeButton(id, handler) {
+    const oldBtn = document.getElementById(id);
+    const newBtn = oldBtn.cloneNode(true);
+    oldBtn.replaceWith(newBtn);
+
+    const guard = e => {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      handler(newBtn, e);
+    };
+
+    newBtn.addEventListener("click", guard, true);
+    newBtn.addEventListener("click", guard, false);
+    return newBtn;
+  }
+
+  // 3) Datos de ítems arrastrables
+  const draggableItemsData = [
+    { id: "draggable-forma",     label: "Forma"     },
+    { id: "draggable-posicion",  label: "Posición"  },
+    { id: "draggable-medida",    label: "Medida"    },
+    { id: "draggable-direccion", label: "Dirección" },
+    { id: "draggable-color",     label: "Color"     }
+  ];
+
+  // 4) Ejemplos
+  const examples = [
+    {
+      description: `Estás intentando cambiar tu nombre de usuario en un videojuego y una vez que terminás de elegirlo, este es el botón que ves abajo para guardar y continuar con la siguiente pantalla. ¿Qué te llama la atención? ¿Podés leer lo que dice? ¿De qué forma suelen ser los botones para guardar o editar datos en una página o en un juego?`,
+      interface: `
+        <div style="padding:20px;">
+          <button style="
+            clip-path: polygon(50% 0%,0% 100%,100% 100%);
+            width:140px;height:40px;font-size:30px;
+            background:#ddd;color:#000!important;
+            border:none;border-radius:5px;
+          ">guardar</button>
+        </div>
+      `,
+      expected: ["draggable-forma","draggable-medida"],
+      hint: `Pensá cuando vas a una página web…`
+    },
+    {
+      description: `Querés registrarte en un juego en línea, pero este es el recuadro que te aparece para poner tu nombre. ¿Podés escribirlo correctamente? ¿Entenderías qué es lo que tenés que completar si no hubieras leído la consigna? ¿El tamaño te parece muy grande, muy chico o así te parece bien?`,
+      interface: `
+        <div style="padding:0;">
+          <div style="display:inline-block;position:relative;width:430px;height:214px;background:black;clip-path:polygon(55% 0%,100% 50%,50% 100%,0% 50%);transform:rotate(23deg);">
+            <input placeholder="Escribe tu nombre" type="text" style="
+              clip-path:inherit;border:2px solid #ccc;padding:5px;position:absolute;
+              top:2px;left:2px;width:426px;height:210px;
+            ">
+          </div>
+        </div>
+      `,
+      expected: ["draggable-medida","draggable-direccion","draggable-forma"],
+      hint: `Pensá en cuando te estás registrando…`
+    },
+    {
+      description: `Estás tratando de leer un artículo en Wikipedia, pero el primer párrafo se ve así. ¿Tenés que acercarte mucho para entender lo que dicen las letras? ¿Es cómodo leer con la cabeza inclinada y con ese tamaño de texto o creés que podría mejorarse?`,
+      interface: `
+        <div style="padding:20px;">
+          <p style="width:300px;font-size:8px;transform:rotate(-5deg);line-height:1.2;margin:0 auto;">
+            ¡Estamos viendo los principios del diseño con Digital House Schools!…
+          </p>
+        </div>
+      `,
+      expected: ["draggable-direccion","draggable-medida"],
+      hint: `Si tuvieras que leer un libro entero…`
+    },
+    {
+      description: `Estás tratando de leer un libro en Internet, pero cuando querés pasar a la siguiente página, ves los botones posicionados de esta manera. ¿Te confunde cómo ir para la próxima página y cómo ir a la anterior?`,
+      interface: `
+        <div style="padding:20px;">
+          <div style="position:relative;width:200px;height:50px;margin:0 auto;">
+            <button style="padding:10px!important;margin:5px;">Siguiente</button>
+            <button style="padding:10px!important;margin:5px;">Atrás</button>
+          </div>
+        </div>
+      `,
+      expected: ["draggable-posicion"],
+      hint: `Si tenés que seguir hacia adelante…`
+    },
+    {
+      description: `Querés arrancar a jugar un juego y el único botón que ves en pantalla es este. ¿Podés leerlo bien? ¿Tuviste que hacer mucho esfuerzo para hacerlo? ¿Creés que un usuario con problemas de visión podría usar esta página sin problemas? ¿De qué otra manera podríamos diseñar el botón para no tener problemas?`,
+      interface: `
+        <div style="padding:20px;">
+          <button style="background:#fffca9;color:white;padding:10px 20px;border:none;border-radius:5px;font-size:16px;">Ejecutar</button>
+        </div>
+      `,
+      expected: ["draggable-color"],
+      hint: `Si tenés que apretar este botón…`
+    }
+  ];
+
+  let currentExampleIndex = 0;
+  let dragDivider;
+
+  // 5) Pinta el banco de ítems
+  function renderBank() {
+    const bank = document.getElementById("bank-container");
+    bank.innerHTML = "";
+    draggableItemsData.forEach(d => {
+      const el = document.createElement("div");
+      el.className = "draggable";
+      el.id = d.id;
+      el.textContent = d.label;
+      bank.appendChild(el);
+    });
+  }
+
+  // 6) Resetea solo la UI sin borrar allStates
+  function resetUI() {
+    const drop = document.getElementById("drop-zone");
+    const bank = document.getElementById("bank-container");
+    drop.querySelectorAll(".draggable").forEach(card => {
+      card.querySelectorAll(".icon").forEach(i => i.remove());
+      bank.appendChild(card);
+    });
+    document.getElementById("verification-message").textContent = "";
+  }
+
+  // 7) Carga y prepara un ejemplo
+  function loadExample(i) {
+    currentExampleIndex = i;
+    document.getElementById("example-description").innerHTML = examples[i].description;
+    document.getElementById("example-interface").innerHTML   = examples[i].interface;
+    document.getElementById("drop-zone").innerHTML = `<h2>Errores Detectados</h2>`;
+    renderBank();
+    dragDivider = new DragDivider({
+      base: {
+        element: document.getElementById("bank-container"),
+        items: draggableItemsData.map(d => ({
+          element: document.getElementById(d.id),
+          expectedCategory: examples[i].expected.includes(d.id) ? "drop" : "bank"
+        }))
+      },
+      categories: [{ name: "drop", element: document.getElementById("drop-zone") }],
+      verifyButton: document.getElementById("verify-button"),
+      messages: {
+        onSuccess: "¡Felicidades! Todas las respuestas son correctas.",
+        onFail:    "Algunas respuestas no son correctas, revisá el error.",
+        onReset:   "Actividad reiniciada."
+      }
+    });
+  }
+
+  // 8) Verifica respuestas, acumula estado y envía al final
+  function verifyAnswers() {
+    const drop     = document.getElementById("drop-zone");
+    const placed   = Array.from(drop.querySelectorAll(".draggable"));
+    const expected = new Set(examples[currentExampleIndex].expected);
+
+    // 8.1) Acumular estado de esta pantalla
+    allStates.push({
+      base: [],
+      categories: [{
+        name: "drop",
+        items: placed.map(el => el.id)
+      }]
+    });
+
+    // 8.2) Mostrar íconos
+    placed.forEach((el,i) => {
+      setTimeout(() => {
         const ok = expected.has(el.id);
         const ic = document.createElement("span");
-        ic.className = ok?"icon correct":"icon incorrect";
-        ic.textContent = ok?"✓":"✗";
+        ic.className = ok ? "icon correct" : "icon incorrect";
+        ic.textContent = ok ? "✓" : "✗";
         el.appendChild(ic);
-      }, i*500));
+      }, i*500);
+    });
 
-      setTimeout(()=>{
-        const msgBox = document.getElementById("verification-message");
-        const provided = new Set(placed.map(el=>el.id));
-        const correct = placed.filter(el=>expected.has(el.id)).length;
-        let msg = "";
-        if (!placed.length) msg = "No se han depositado respuestas.";
-        else if (provided.size===expected.size && correct===expected.size)
-          msg = "¡Felicidades! Todas las respuestas son correctas.";
-        else if (!correct)
-          msg = "¡Reintentá! Si necesitás ayuda, presioná 'Pista'.";
-        else if (correct===placed.length)
-          msg = "Todas las respuestas depositadas son correctas, pero faltan una o más.";
-        else
-          msg = "Hay varias respuestas correctas, pero una o más no lo están.";
-        msgBox.textContent = msg;
+    // 8.3) Calcular y mostrar mensaje
+    setTimeout(() => {
+      const msgBox   = document.getElementById("verification-message");
+      const provided = new Set(placed.map(el=>el.id));
+      const correct  = placed.filter(el=>expected.has(el.id)).length;
+      let msg = "";
 
-        // 3) Si es el último y éxito → enviamos UNA sola vez
-        if (msg.startsWith("¡Felicidades!") && currentExampleIndex===examples.length-1) {
-          sendProgressToLMS("SUCCESS", allStates);
+      if (!placed.length)                                           msg = "No se han depositado respuestas.";
+      else if (provided.size===expected.size && correct===expected.size)
+                                                                    msg = "¡Felicidades! Todas las respuestas son correctas.";
+      else if (!correct)                                           msg = "¡Reintentá! Si necesitás ayuda, presioná 'Pista'.";
+      else if (correct===placed.length)                            msg = "Todas las respuestas depositadas son correctas, pero faltan una o más.";
+      else                                                          msg = "Hay varias respuestas correctas, pero una o más no lo están.";
+
+      msgBox.textContent = msg;
+
+      // 8.4) Si es el último y TODO correcto, enviamos una sola mutación
+      if (msg.startsWith("¡Felicidades!") && currentExampleIndex===examples.length-1) {
+        sendProgressToLMS("SUCCESS", allStates);
+      }
+
+      // 8.5) Navegación siguiente/jugar de nuevo
+      if (msg.startsWith("¡Felicidades!")) {
+        msgBox.appendChild(document.createElement("br"));
+        if (currentExampleIndex < examples.length - 1) {
+          const nxt = document.createElement("button");
+          nxt.id = "next-example";
+          nxt.textContent = "Siguiente ejemplo";
+          msgBox.appendChild(nxt);
+          makeSafeButton("next-example", () => {
+            const ni = currentExampleIndex + 1;
+            localStorage.setItem("currentExampleIndex", ni);
+            resetUI();
+            loadExample(ni);
+          });
+        } else {
+          const play = document.createElement("button");
+          play.id = "play-again";
+          play.textContent = "Jugar de nuevo";
+          msgBox.appendChild(play);
+          makeSafeButton("play-again", () => {
+            localStorage.setItem("currentExampleIndex", 0);
+            resetUI();
+            loadExample(0);
+          });
         }
+      }
+    }, placed.length*500 + 300);
+  }
 
-        // 4) Navegación siguiente/jugar-de-nuevo
-        if (msg.startsWith("¡Felicidades!")) {
-          msgBox.appendChild(document.createElement("br"));
-          const btn = document.createElement("button");
-          if (currentExampleIndex<examples.length-1) {
-            btn.id="next-example"; btn.textContent="Siguiente ejemplo";
-            msgBox.appendChild(btn);
-            makeSafeButton("next-example", ()=>{
-              const nxt=currentExampleIndex+1;
-              localStorage.setItem("currentExampleIndex", nxt);
-              loadExample(nxt);
-            });
-          } else {
-            btn.id="play-again"; btn.textContent="Jugar de nuevo";
-            msgBox.appendChild(btn);
-            makeSafeButton("play-again", ()=>{
-              localStorage.setItem("currentExampleIndex",0);
-              loadExample(0);
-            });
-          }
-        }
-      }, placed.length*500+300);
-    }
+  // 9) Modal de pista
+  function showHint() {
+    document.getElementById("hint-text").textContent = examples[currentExampleIndex].hint;
+    document.getElementById("hint-modal").style.display = "flex";
+  }
 
-    window.onload = () => {
-      new PGEvent().getValues();
-      const saved = parseInt(localStorage.getItem("currentExampleIndex")||"0",10);
-      loadExample(saved>=0&&saved<examples.length? saved:0);
+  // 10) Al cargar la página
+  window.onload = () => {
+    new PGEvent().getValues();
 
-      // Clonar botones para limpiar listeners LMS
-      makeSafeButton("verify-button", ()=>verifyAnswers());
-      makeSafeButton("reset-button", ()=>{ 
-        localStorage.setItem("currentExampleIndex",0);
-        resetUI();
-        loadExample(0);
-      });
+    // 10.1) Cargar progreso
+    const saved = parseInt(localStorage.getItem("currentExampleIndex") || "0", 10);
+    loadExample((saved >= 0 && saved < examples.length) ? saved : 0);
 
-      // Modales
-      document.getElementById("hint-button").addEventListener("click", ()=>document.getElementById("hint-modal").style.display="flex");
-      document.getElementById("hint-ok-button").addEventListener("click", ()=>document.getElementById("hint-modal").style.display="none");
-      document.getElementById("instructions-button").addEventListener("click", ()=>document.getElementById("instructions-modal").style.display="flex");
-      document.getElementById("instructions-ok-button").addEventListener("click", ()=>document.getElementById("instructions-modal").style.display="none");
-      document.getElementById("instructions-modal").style.display="flex";
-    };
-  </script>
+    // 10.2) Botones seguros
+    makeSafeButton("verify-button", () => verifyAnswers());
+    makeSafeButton("reset-button", () => {
+      localStorage.setItem("currentExampleIndex", 0);
+      resetUI();
+      loadExample(0);
+    });
+
+    // 10.3) Modales
+    document.getElementById("hint-button").addEventListener("click", showHint);
+    document.getElementById("hint-ok-button").addEventListener("click", () => {
+      document.getElementById("hint-modal").style.display = "none";
+    });
+    document.getElementById("instructions-button").addEventListener("click", () => {
+      document.getElementById("instructions-modal").style.display = "flex";
+    });
+    document.getElementById("instructions-ok-button").addEventListener("click", () => {
+      document.getElementById("instructions-modal").style.display = "none";
+    });
+
+    // Mostrar instrucciones al inicio
+    document.getElementById("instructions-modal").style.display = "flex";
+  };
+</script>
 </body>
 </html>
