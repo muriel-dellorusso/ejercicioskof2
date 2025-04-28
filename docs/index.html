@@ -180,128 +180,71 @@
     </div>
   </div>
 
- <script type="module">
-/* ------------------------------------------------------------------ */
-/*  IMPORTS                                                           */
-/* ------------------------------------------------------------------ */
-import { DragDivider } from "./drag.js";
-import { PGEvent     } from "./pg-event.js";
+  <script type="module">
+    import { DragDivider } from "./drag.js";
+    import { PGEvent     } from "./pg-event.js";
 
-// --- 0) debajo de tus imports, crea un array para acumular estados ---
-const allStates = [];
+    // 0) Acumulador de estados para enviar al final
+    const allStates = [];
 
-// --- 1) Función genérica para enviar la mutación ---
-function sendProgressToLMS(exerciseStatus, lastSending) {
-  const payload = {
-    operationName: "AddBlockProgress",
-    query: `
-      mutation AddBlockProgress(
-        $courseId: String!,
-        $topicId: String!,
-        $blocks: [ProgressBlockInput!]!
-      ) {
-        addBlockProgress(
-          course_id: $courseId,
-          topic_id: $topicId,
-          blocks: $blocks
-        ) {
-          blockType
-          completed
+    // 1) Mutación única al terminar todos los ejercicios
+    function sendProgressToLMS(exerciseStatus, lastSending) {
+      const payload = {
+        operationName: "AddBlockProgress",
+        query: `
+          mutation AddBlockProgress($courseId: String!, $topicId: String!, $blocks: [ProgressBlockInput!]!) {
+            addBlockProgress(course_id:$courseId, topic_id:$topicId, blocks:$blocks) {
+              blockType
+              completed
+            }
+          }
+        `,
+        variables: {
+          courseId: "1ffb7b19-e853-4c39-a38a-de1b00c84280",
+          topicId:  "9a954bf7-2d1d-4c89-a10a-2920a07e479e",
+          blocks: [{
+            block_id: "4698a76a-ad1d-47b3-922a-491749246ae0",
+            block_type: "exercise",
+            exercise_iframe_payload: {
+              exercise_status: exerciseStatus,      // "SUCCESS" o "FAILURE"
+              last_sending: JSON.stringify(lastSending)
+            }
+          }]
         }
-      }
-    `,
-    variables: {
-      courseId:   "1ffb7b19-e853-4c39-a38a-de1b00c84280",     // reemplazá con tu ID real
-      topicId:    "9a954bf7-2d1d-4c89-a10a-2920a07e479e",     // reemplazá con tu ID real
-      blocks: [{
-        block_id: "4698a76a-ad1d-47b3-922a-491749246ae0",     // ID de este ejercicio
-        block_type: "exercise",
-        exercise_iframe_payload: {
-          exercise_status: exerciseStatus,                   // "SUCCESS" o "FAILURE"
-          last_sending: JSON.stringify(lastSending)         // acá enviás todo allStates
-        }
-      }]
+      };
+      return fetch("/graphql", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(console.log)
+      .catch(console.error);
     }
-  };
 
-  return fetch("/graphql", {                               // o la URL que use tu LMS
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  })
-  .then(r => r.json())
-  .then(console.log)
-  .catch(console.error);
-}
+    // 2) Anti-LMS: clona botón y elimina listeners externos
+    function makeSafeButton(id, handler) {
+      const oldBtn = document.getElementById(id);
+      const newBtn = oldBtn.cloneNode(true);
+      oldBtn.replaceWith(newBtn);
+      const guard = e => {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        handler(newBtn, e);
+      };
+      newBtn.addEventListener("click", guard, true);
+      newBtn.addEventListener("click", guard, false);
+      return newBtn;
+    }
 
-// --- 2) En tu verifyAnswers, cuando obtengas el estado de esta pantalla … ---
-function verifyAnswers() {
-  // … tu lógica normal para dibujar iconos y calcular mensaje
-  const stateForThis = {
-    base: [],      // aquí armás lo mismo que en tu state JSON
-    categories: [
-      {
-        name: "drop",
-        items: Array.from(
-          document.getElementById("drop-zone")
-                  .querySelectorAll(".draggable")
-        ).map(el => el.id)
-      }
-    ]
-  };
-
-  // Acumula el estado
-  allStates.push(stateForThis);
-
-  // … luego, si es el último ejemplo y todas correctas …
-  if (mensaje === "¡Felicidades! Todas las respuestas son correctas."
-      && currentExampleIndex === examples.length - 1) {
-    // enviamos UNA sola vez TODO el progreso:
-    sendProgressToLMS("SUCCESS", allStates);
-  }
-
-  // … resto de tu código para siguiente/play again …
-}
-
-
-/* ------------------------------------------------------------------ */
-/*  HELPER anti-LMS                                                   */
-/* ------------------------------------------------------------------ */
-/** Clona el botón para eliminar listeners del LMS y engancha sólo el tuyo */
-/**
- * Clona el botón (id) para eliminar listeners del LMS y
- * engancha nuestro handler en CAPTURA + BURBUJEO.
- */
-function makeSafeButton(id, handler) {
-  const oldBtn = document.getElementById(id);
-  const newBtn = oldBtn.cloneNode(true);
-  oldBtn.replaceWith(newBtn);
-
-  /* Bloqueo total: captura → propio handler → fin del evento */
-  const guard = (e) => {
-    e.preventDefault();
-    e.stopImmediatePropagation();  // frena captura + burbujeo
-    handler(newBtn, e);            // nuestra lógica
-  };
-
-  /* Fase de captura (antes que el LMS) */
-  newBtn.addEventListener("click", guard, true);
-  /* Fase de burbujeo (por las dudas) */
-  newBtn.addEventListener("click", guard, false);
-
-  return newBtn;
-}
-
-/* ------------------------------------------------------------------ */
-/*  DATA                                                              */
-/* ------------------------------------------------------------------ */
-const draggableItemsData = [
-  { id: "draggable-forma",      label: "Forma"      },
-  { id: "draggable-posicion",   label: "Posición"   },
-  { id: "draggable-medida",     label: "Medida"     },
-  { id: "draggable-direccion",  label: "Dirección"  },
-  { id: "draggable-color",      label: "Color"      }
-];
+    // 3) Datos y ejemplos (igual que antes)
+    const draggableItemsData = [
+      { id: "draggable-forma",     label: "Forma" },
+      { id: "draggable-posicion",  label: "Posición" },
+      { id: "draggable-medida",    label: "Medida" },
+      { id: "draggable-direccion", label: "Dirección" },
+      { id: "draggable-color",     label: "Color" }
+    ];
 
 const examples = [
   /* ----- ejemplo 1 ----- */
@@ -378,186 +321,143 @@ const examples = [
 /*  STATE & HELPERS                                                   */
 /* ------------------------------------------------------------------ */
 let currentExampleIndex = 0;
-let dragDivider;
+    let dragDivider;
 
-function renderBank() {
-  const bank = document.getElementById("bank-container");
-  bank.innerHTML = "";
-  draggableItemsData.forEach(d => {
-    const el = document.createElement("div");
-    el.classList.add("draggable");
-    el.id = d.id;
-    el.textContent = d.label;
-    bank.appendChild(el);
-  });
-}
-
-function resetUI() {
-  const drop = document.getElementById("drop-zone");
-  const bank = document.getElementById("bank-container");
-
-  drop.querySelectorAll(".draggable").forEach(card => {
-    card.querySelectorAll(".icon").forEach(i => i.remove());
-    bank.appendChild(card);
-  });
-
-  document.getElementById("verification-message").textContent = "";
-  document.getElementById("verify-button").disabled = false;
-}
-
-function loadExample(i) {
-  currentExampleIndex = i;
-  document.getElementById("example-description").innerHTML = examples[i].description;
-  document.getElementById("example-interface").innerHTML   = examples[i].interface;
-
-  const drop = document.getElementById("drop-zone");
-  drop.innerHTML = `<h2>Errores Detectados</h2>`;
-  renderBank();
-
-  const items = draggableItemsData.map(d => ({
-    element: document.getElementById(d.id),
-    expectedCategory: examples[i].expected.includes(d.id) ? "drop" : "bank"
-  }));
-
-  dragDivider = new DragDivider({
-    base      : { element: document.getElementById("bank-container"), items },
-    categories: [{ name:"drop", element: drop }],
-    verifyButton: document.getElementById("verify-button"),   // se clona luego
-    messages: {
-      onSuccess: "¡Felicidades! Todas las respuestas son correctas.",
-      onFail   : "Algunas respuestas no son correctas, revisá el error y presioná 'Reiniciar'.",
-      onReset  : "Actividad reiniciada."
+    function renderBank() {
+      const bank = document.getElementById("bank-container");
+      bank.innerHTML = "";
+      draggableItemsData.forEach(d => {
+        const el = document.createElement("div");
+        el.className = "draggable";
+        el.id = d.id;
+        el.textContent = d.label;
+        bank.appendChild(el);
+      });
     }
-  });
 
-  document.getElementById("verification-message").textContent = "";
-  document.getElementById("verify-button").disabled = false;
-}
-
-/* ------------------------------------------------------------------ */
-/*  VERIFICACIÓN                                                      */
-/* ------------------------------------------------------------------ */
-function verifyAnswers() {
-  const expected = new Set(examples[currentExampleIndex].expected);
-  const drop     = document.getElementById("drop-zone");
-  const placed   = Array.from(drop.querySelectorAll(".draggable"));
-
-  /* iconos ✓ / ✗ */
-  placed.forEach((el,i) => {
-    setTimeout(() => {
-      const ok  = expected.has(el.id);
-      const ic  = document.createElement("span");
-      ic.classList.add("icon", ok ? "correct" : "incorrect");
-      ic.textContent = ok ? "✓" : "✗";
-      el.appendChild(ic);
-    }, i * 500);
-  });
-
-  /* resumen y navegación */
-  setTimeout(() => {
-    const msgBox   = document.getElementById("verification-message");
-    const provided = new Set(placed.map(el => el.id));
-    const correct  = placed.filter(el => expected.has(el.id)).length;
-
-    let msg = "";
-    if (!placed.length)                             msg = "No se han depositado respuestas.";
-    else if (provided.size === expected.size && correct === expected.size)
-                                                   msg = "¡Felicidades! Todas las respuestas son correctas.";
-    else if (!correct)                              msg = "¡Reintentá! Si necesitás ayuda, presioná 'Pista'.";
-    else if (correct === placed.length)             msg = "Todas las respuestas depositadas son correctas, pero faltan una o más.";
-    else                                            msg = "Hay varias respuestas correctas, pero una o más no lo están.";
-
-    msgBox.textContent = msg;
-
-    /* Si está todo OK, mostramos navegación */
-    if (msg.startsWith("¡Felicidades!")) {
-      msgBox.appendChild(document.createElement("br"));
-
-      /* siguiente ejemplo */
-      if (currentExampleIndex < examples.length - 1) {
-        const nxtRaw = document.createElement("button");
-        nxtRaw.id = "next-example";
-        nxtRaw.textContent = "Siguiente ejemplo";
-        msgBox.appendChild(nxtRaw);
-
-        makeSafeButton("next-example", () => {
-          const nxt = currentExampleIndex + 1;
-          localStorage.setItem("currentExampleIndex", nxt);
-          loadExample(nxt);
-        });
-
-      /* último ejemplo → jugar de nuevo */
-      } else {
-        const playRaw = document.createElement("button");
-        playRaw.id = "play-again";
-        playRaw.textContent = "Jugar de nuevo";
-        msgBox.appendChild(playRaw);
-
-        makeSafeButton("play-again", () => {
-          localStorage.setItem("currentExampleIndex", 0);
-          loadExample(0);
-        });
-      }
+    function resetUI() {
+      const drop = document.getElementById("drop-zone");
+      const bank = document.getElementById("bank-container");
+      drop.querySelectorAll(".draggable").forEach(card => {
+        card.querySelectorAll(".icon").forEach(i=>i.remove());
+        bank.appendChild(card);
+      });
+      document.getElementById("verification-message").textContent = "";
+      document.getElementById("verify-button").disabled = false;
     }
-  }, placed.length * 500 + 300);
-}
 
-/* ------------------------------------------------------------------ */
-/*  HINTS & INSTRUCTIONS                                               */
-/* ------------------------------------------------------------------ */
-function showHint() {
-  document.getElementById("hint-text").textContent = examples[currentExampleIndex].hint;
-  document.getElementById("hint-modal").style.display = "flex";
-}
+    function loadExample(i) {
+      currentExampleIndex = i;
+      document.getElementById("example-description").innerHTML = examples[i].description;
+      document.getElementById("example-interface").innerHTML   = examples[i].interface;
+      document.getElementById("drop-zone").innerHTML = `<h2>Errores Detectados</h2>`;
+      renderBank();
+      dragDivider = new DragDivider({
+        base: { element: document.getElementById("bank-container"),
+                items: draggableItemsData.map(d=>({
+                         element: document.getElementById(d.id),
+                         expectedCategory: examples[i].expected.includes(d.id)?"drop":"bank"
+                       }))
+              },
+        categories: [{ name:"drop", element: document.getElementById("drop-zone") }],
+        verifyButton: document.getElementById("verify-button"),
+        messages: {
+          onSuccess: "¡Felicidades! Todas las respuestas son correctas.",
+          onFail:    "Algunas respuestas no son correctas, revisá el error y presioná 'Reiniciar'.",
+          onReset:   "Actividad reiniciada."
+        }
+      });
+    }
 
-/* ------------------------------------------------------------------ */
-/*  ON LOAD                                                           */
-/* ------------------------------------------------------------------ */
-window.onload = () => {
-  new PGEvent().getValues();
+    function verifyAnswers() {
+      // 1) Acumular estado de esta pantalla
+      const stateForThis = {
+        base: [],
+        categories: [{
+          name:"drop",
+          items: Array.from(
+            document.getElementById("drop-zone").querySelectorAll(".draggable")
+          ).map(el=>el.id)
+        }]
+      };
+      allStates.push(stateForThis);
 
-  const saved = parseInt(localStorage.getItem("currentExampleIndex") ?? "0", 10);
-  loadExample(Number.isInteger(saved) && examples[saved] ? saved : 0);
+      // 2) Mostrar iconos y mensaje
+      const expected = new Set(examples[currentExampleIndex].expected);
+      const placed   = Array.from(document.getElementById("drop-zone").querySelectorAll(".draggable"));
+      placed.forEach((el,i)=>setTimeout(()=>{
+        const ok = expected.has(el.id);
+        const ic = document.createElement("span");
+        ic.className = ok?"icon correct":"icon incorrect";
+        ic.textContent = ok?"✓":"✗";
+        el.appendChild(ic);
+      }, i*500));
 
-  /* clonar y limpiar botones */
-  makeSafeButton("verify-button", (btn) => {
-    btn.disabled = true;
-    verifyAnswers();
-  });
-  makeSafeButton("reset-button", () => resetUI());
+      setTimeout(()=>{
+        const msgBox = document.getElementById("verification-message");
+        const provided = new Set(placed.map(el=>el.id));
+        const correct = placed.filter(el=>expected.has(el.id)).length;
+        let msg = "";
+        if (!placed.length) msg = "No se han depositado respuestas.";
+        else if (provided.size===expected.size && correct===expected.size)
+          msg = "¡Felicidades! Todas las respuestas son correctas.";
+        else if (!correct)
+          msg = "¡Reintentá! Si necesitás ayuda, presioná 'Pista'.";
+        else if (correct===placed.length)
+          msg = "Todas las respuestas depositadas son correctas, pero faltan una o más.";
+        else
+          msg = "Hay varias respuestas correctas, pero una o más no lo están.";
+        msgBox.textContent = msg;
 
-  /* modales */
-  document.getElementById("instructions-button").addEventListener("click", () => {
-    document.getElementById("instructions-modal").style.display = "flex";
-  });
-  document.getElementById("instructions-ok-button").addEventListener("click", () => {
-    document.getElementById("instructions-modal").style.display = "none";
-  });
-  document.getElementById("hint-button").addEventListener("click", showHint);
-  document.getElementById("hint-ok-button").addEventListener("click", () => {
-    document.getElementById("hint-modal").style.display = "none";
-  });
+        // 3) Si es el último y éxito → enviamos UNA sola vez
+        if (msg.startsWith("¡Felicidades!") && currentExampleIndex===examples.length-1) {
+          sendProgressToLMS("SUCCESS", allStates);
+        }
 
-  /* mostramos instrucciones al inicio */
-  document.getElementById("instructions-modal").style.display = "flex";
-};
-</script>
+        // 4) Navegación siguiente/jugar-de-nuevo
+        if (msg.startsWith("¡Felicidades!")) {
+          msgBox.appendChild(document.createElement("br"));
+          const btn = document.createElement("button");
+          if (currentExampleIndex<examples.length-1) {
+            btn.id="next-example"; btn.textContent="Siguiente ejemplo";
+            msgBox.appendChild(btn);
+            makeSafeButton("next-example", ()=>{
+              const nxt=currentExampleIndex+1;
+              localStorage.setItem("currentExampleIndex", nxt);
+              loadExample(nxt);
+            });
+          } else {
+            btn.id="play-again"; btn.textContent="Jugar de nuevo";
+            msgBox.appendChild(btn);
+            makeSafeButton("play-again", ()=>{
+              localStorage.setItem("currentExampleIndex",0);
+              loadExample(0);
+            });
+          }
+        }
+      }, placed.length*500+300);
+    }
 
+    window.onload = () => {
+      new PGEvent().getValues();
+      const saved = parseInt(localStorage.getItem("currentExampleIndex")||"0",10);
+      loadExample(saved>=0&&saved<examples.length? saved:0);
 
-  
-  <div id="instructions-modal" class="modal">
-    <div class="modal-content">
-      <p id="instructions-text">
-        Bienvenido a la actividad multi-ejemplo de detección de errores de diseño.  
-        En esta actividad verás diferentes muestras de interfaces con errores de diseño.  
-        Tu tarea es arrastrar los elementos (Forma, Posición, Medida, Dirección y Color) al área "Errores Detectados" según corresponda para cada caso.  
-        Presiona "Guardar y verificar" para comprobar tus respuestas y "Reiniciar" para volver a empezar el ejemplo actual.  
-        Si necesitas ayuda, puedes usar los botones "Pista" o "Instrucciones" las veces que necesites. ¡Buena suerte!
-      </p>
-      <button id="instructions-ok-button">Okay</button>
-    </div>
-  </div>
+      // Clonar botones para limpiar listeners LMS
+      makeSafeButton("verify-button", ()=>verifyAnswers());
+      makeSafeButton("reset-button", ()=>{ 
+        localStorage.setItem("currentExampleIndex",0);
+        resetUI();
+        loadExample(0);
+      });
+
+      // Modales
+      document.getElementById("hint-button").addEventListener("click", ()=>document.getElementById("hint-modal").style.display="flex");
+      document.getElementById("hint-ok-button").addEventListener("click", ()=>document.getElementById("hint-modal").style.display="none");
+      document.getElementById("instructions-button").addEventListener("click", ()=>document.getElementById("instructions-modal").style.display="flex");
+      document.getElementById("instructions-ok-button").addEventListener("click", ()=>document.getElementById("instructions-modal").style.display="none");
+      document.getElementById("instructions-modal").style.display="flex";
+    };
+  </script>
 </body>
-</html>
-
 </html>
