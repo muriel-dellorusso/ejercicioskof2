@@ -184,22 +184,16 @@
   import { DragDivider } from "./drag.js";
   import { PGEvent     } from "./pg-event.js";
 
-  // ── 0) Anular cualquier envío interno de PGEvent ──
   PGEvent.prototype.postEvent = function(type, message, state) {
     console.log(`[PGEvent stub]`, { type, message, state });
-    // No hace fetch ni dispara GraphQL
   };
 
-  // ── 1) Acumulador de estados ──
   const allStates = [];
 
-  // ── 2) STUB de envío final, sin fetch ──
   function sendProgressToLMS(exerciseStatus, lastSending) {
     console.log("✅ Simulando envío final de progreso:", { exerciseStatus, lastSending });
-    // No contiene ninguna llamada a fetch ni GraphQL
   }
 
-  // ── 3) makeSafeButton: clona y limpia listeners externos ──
   function makeSafeButton(id, handler) {
     const oldBtn = document.getElementById(id);
     const newBtn = oldBtn.cloneNode(true);
@@ -214,7 +208,6 @@
     return newBtn;
   }
 
-  // ── 4) Datos de ítems arrastrables ──
   const draggableItemsData = [
     { id: "draggable-forma",     label: "Forma"     },
     { id: "draggable-posicion",  label: "Posición"  },
@@ -222,7 +215,6 @@
     { id: "draggable-direccion", label: "Dirección" },
     { id: "draggable-color",     label: "Color"     }
   ];
-  // 4) Ejemplos
   const examples = [
     {
       description: `Estás intentando cambiar tu nombre de usuario en un videojuego y una vez que terminás de elegirlo, este es el botón que ves abajo para guardar y continuar con la siguiente pantalla. ¿Qué te llama la atención? ¿Podés leer lo que dice? ¿De qué forma suelen ser los botones para guardar o editar datos en una página o en un juego?`,
@@ -294,7 +286,6 @@
    let currentExampleIndex = 0;
   let dragDivider;
 
-  // ── 6) Renderiza el banco ──
   function renderBank() {
     const bank = document.getElementById("bank-container");
     bank.innerHTML = "";
@@ -307,7 +298,6 @@
     });
   }
 
-  // ── 7) Resetea la UI ──
   function resetUI() {
     const drop = document.getElementById("drop-zone");
     const bank = document.getElementById("bank-container");
@@ -318,7 +308,6 @@
     document.getElementById("verification-message").textContent = "";
   }
 
-  // ── 8) Carga un ejemplo ──
   function loadExample(i) {
     currentExampleIndex = i;
     document.getElementById("example-description").innerHTML = examples[i].description;
@@ -349,13 +338,11 @@
     const placed   = Array.from(drop.querySelectorAll(".draggable"));
     const expected = new Set(examples[currentExampleIndex].expected);
 
-    // 9.1) Acumular estado
     allStates.push({
       base: [],
       categories: [{ name: "drop", items: placed.map(el => el.id) }]
     });
 
-    // 9.2) Íconos
     placed.forEach((el, idx) => {
       setTimeout(() => {
         const ok = expected.has(el.id);
@@ -366,7 +353,6 @@
       }, idx * 500);
     });
 
-    // 9.3) Mensaje y navegación
     setTimeout(() => {
       const msgBox   = document.getElementById("verification-message");
       const provided = new Set(placed.map(el => el.id));
@@ -387,7 +373,6 @@
         sendProgressToLMS("SUCCESS", allStates);
       }
 
-      // 9.5) Navegación
       if (msg.startsWith("¡Felicidades!")) {
         msgBox.appendChild(document.createElement("br"));
         if (currentExampleIndex < examples.length - 1) {
@@ -408,13 +393,11 @@
     }, placed.length * 500 + 300);
   }
 
-  // ── 10) Pista ──
   function showHint() {
     document.getElementById("hint-text").textContent = examples[currentExampleIndex].hint;
     document.getElementById("hint-modal").style.display = "flex";
   }
 
-  // ── 11) Al cargar la página ──
   window.onload = () => {
     new PGEvent().getValues();
     const saved = parseInt(localStorage.getItem("currentExampleIndex") || "0", 10);
